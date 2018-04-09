@@ -1,0 +1,20 @@
+{
+  "name": "drupal/webpack",
+  "type": "drupal-module",
+  "description": "Provides webpack for Drupal.",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/webpack",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/webpack",
+    "source": "http://cgit.drupalcode.org/webpack"
+  },
+  "require": { },
+  "authors": [
+    {
+        "name": "Błażej Owczarczyk",
+        "email": "blazeyy@gmail.com"
+    }
+  ]
+}

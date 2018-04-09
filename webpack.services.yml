@@ -1,0 +1,5 @@
+services:
+  asset.js.collection_renderer.webpack:
+    class: Drupal\webpack\Asset\JsCollectionRendererWebpack
+    decorates: asset.js.collection_renderer
+    arguments: [ '@asset.js.collection_renderer.webpack.inner' ]

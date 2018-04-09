@@ -1,0 +1,5 @@
+name: 'Webpack'
+type: module
+description: 'Adds webpack for bundling Drupal javascript.'
+core: 8.x
+package: 'Javascript'
