@@ -1,20 +1,20 @@
-Use <a href="https://webpack.js.org/" target="_blank">webpack</a> to transpile, bundle and minify Drupal's javascript files. Work in progress.
+Use <a href="https://webpack.js.org/" target="_blank">webpack</a> to bundle javascript files, transpile them and include modules from a site-wide package.json file.
 
 <h2>Should I use it now?</h2>
 
-No, unless you want to test it out and contribute. Right now it's just a working prototype without any settings. The values are hardcoded for a composer project with a <code>package.json</code> in the repository root and libraries in <code>modules/custom</code>.
+No, unless you want to test it out and contribute. Right now it's just a working prototype without any settings. The values are hardcoded for a composer project with a <code>package.json</code> in the repository root (with at least <code>webpack</code> and <code>webpack-cli</code>) and libraries in <code>modules/custom</code>.
 
 <h2>What it does?</h2>
 
-This module will allow developers to write their Drupal libraries in modern javascript, as well as import modules from npm.
+This module lets developers write their Drupal libraries in modern javascript and import modules from npm.
 
 <h2>How it works?</h2>
 
-Right now it decorates the <code>asset.js.collection_renderer</code> service and bundles all the js libraries matching criteria into a single bundle. This is going to change, as decorating the <code>asset.resolver</code> service seems to be much more promising.
+Right now it decorates the <code>asset.js.collection_renderer</code> service and bundles all the js libraries matching criteria into a single file. This is going to change, as decorating the <code>asset.resolver</code> service seems to be much more promising.
 
-<h2>Contributing</h2>
+<h2>How can I contribute?</h2>
 
-If you'd like to contribute
+Suggest features or improvements by creating a <a href="https://www.drupal.org/node/add/project-issue/webpack" target="_blank">new issue</a>. Alternatively,
 
 <ul>
   <li>Find a TODO comment in code.</li>
@@ -24,5 +24,6 @@ If you'd like to contribute
       <li>Otherwise, create a new issue with the name of the todo and assign it to yourself.</li>
     </ul>
   </li>
-  <li>Usully it's best to discuss the solution before writing any patches.</li>
 </ul>
+
+Usually, it's a good idea to discuss the problem in the issue before writing patches. Ping @blazey in #webpack on <a href="https://drupalchat.eu/channel/webpack" target="_blank">drupalchat.eu</a> (or slack).

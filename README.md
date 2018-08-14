@@ -23,3 +23,15 @@ If you'd like to contribute
   - If there is one, check the progress and help there if possible.
   - Otherwise, create a new issue with the name of the todo and assign it to yourself
 - Usully it's best to discuss the solution before writing any patches.
+
+## Setup
+
+Your project needs to have a `package.json` file somewhere. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide `composer.json`. Placing the file inside the webroot would work too.
+
+If you don't have such a file, fear not. `yarn init -yp` will generate an empty one.
+
+`yarn add webpack webpack-serve webpack-cli--dev` 
+
+Babel setup
+
+`yarn add  babel-core babel-loader babel-preset-env --dev`

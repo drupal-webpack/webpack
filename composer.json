@@ -10,7 +10,21 @@
     "issues": "https://www.drupal.org/project/issues/webpack",
     "source": "http://cgit.drupalcode.org/webpack"
   },
-  "require": { },
+  "require": {
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Drupal\\webpack\\": "src/"
+    }
+  },
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
+  },
   "authors": [
     {
         "name": "Błażej Owczarczyk",

@@ -41,6 +41,7 @@ class JsCollectionRendererWebpack implements AssetCollectionRendererInterface {
       $src = $script['#attributes']['src'];
 
       // TODO: Do all that at the Asset Resolver level.
+      // TODO: Swap the asset resolver service.
       // TODO: Grab libraries eligible for webpacking by a field in the lib definition.
       if (substr($src, 0, 15) == '/modules/custom') {
         // TODO: Check if es6 file exists.
@@ -77,3 +78,44 @@ class JsCollectionRendererWebpack implements AssetCollectionRendererInterface {
   }
 
 }
+
+/*
+
+Decorate the AssetResolver service.
+
+For js files, take the assets from the header and from the footer, look for the
+"webpack" group and run these through webpack.
+
+The libraries need to be in the webpack group (check feasibility) and have minified: true.
+
+// DONE: Write a drush command that will serve the bundle consisting of all webpack libraries defined in enabled modules / themes.
+
+// DONE: Build a dynamic webpack config file with CommonChunksPlugin to leverage long term vendor caching.
+
+// TODO: Decorate the asset resolver service.
+
+// TODO: In the asset resolver, check if the dev server is available and add its external file if so.
+
+// TODO: Build the entry file names
+
+// TODO: Write a drush command to build all the webpack libraries.
+
+// TODO: Add separation for vendor and each lib.
+
+// TODO: Add the ability to configure webpack config additions (alter hook).
+
+// TODO: Add the ability to override the executable (yarn).
+
+// TODO: Add an npm package with all the dependencies and, possibly, scripts.
+
+// TODO: Make the webpack-serve port configurable.
+
+// TODO: Write a test module with an example webpack library.
+
+// TODO: Write a test for getEntryPoints.
+
+// TODO: Write a test for getWebpackConfig.
+
+// TODO: Write a test for writeWebpackConfig.
+
+ */
