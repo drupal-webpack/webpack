@@ -22,7 +22,7 @@ If you'd like to contribute
 - Search for an existing task for this TODO item in the [issue queue](https://www.drupal.org/project/issues/webpack?status=All&categories=All).
   - If there is one, check the progress and help there if possible.
   - Otherwise, create a new issue with the name of the todo and assign it to yourself
-- Usully it's best to discuss the solution before writing any patches.
+- Usually it's best to discuss the solution before writing any patches.
 
 ## Setup
 

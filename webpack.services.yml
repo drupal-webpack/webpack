@@ -1,5 +1,5 @@
 services:
-  asset.js.collection_renderer.webpack:
-    class: Drupal\webpack\Asset\JsCollectionRendererWebpack
-    decorates: asset.js.collection_renderer
-    arguments: [ '@asset.js.collection_renderer.webpack.inner' ]
+  asset.resolver.webpack:
+    class: Drupal\webpack\Asset\DecoratedAssetResolver
+    decorates: asset.resolver
+    arguments: [ '@asset.resolver.webpack.inner', '@library.discovery' ]
