@@ -1,0 +1,7 @@
+name: 'Webpack test libraries'
+type: module
+description: 'Add webpack libraries for testing.'
+core: 8.x
+package: 'Javascript'
+dependencies:
+  - webpack

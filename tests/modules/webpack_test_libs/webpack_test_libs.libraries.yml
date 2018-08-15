@@ -1,0 +1,11 @@
+test:
+  version: VERSION
+  webpack: true
+  js:
+    js/test.js: { }
+test_header:
+  version: VERSION
+  header: true
+  webpack: true
+  js:
+    js/test.js: { }
