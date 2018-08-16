@@ -6,6 +6,7 @@ use Drupal\Core\Asset\LibraryDiscoveryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\State\StateInterface;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -17,11 +18,59 @@ class WebpackDrushCommands extends DrushCommands {
 
   protected $fileSystem;
 
-  public function __construct(ModuleHandlerInterface $moduleHandler, ThemeHandlerInterface $themeHandler, LibraryDiscoveryInterface $libraryDiscovery, FileSystemInterface $fileSystem) {
+  public function __construct(ModuleHandlerInterface $moduleHandler, ThemeHandlerInterface $themeHandler, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, FileSystemInterface $fileSystem) {
     $this->moduleHandler = $moduleHandler;
     $this->themeHandler = $themeHandler;
     $this->libraryDiscovery = $libraryDiscovery;
+    $this->state = $state;
     $this->fileSystem = $fileSystem;
+  }
+
+  /**
+   * Builds the output files.
+   *
+   * @command webpack:build
+   * @aliases wpbuild
+   * @usage drush wepback:build
+   *   Build the js bundles.
+   *
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   * @throws \Drupal\webpack\WebpackDrushConfigWriteException
+   * @throws \Drupal\webpack\WebpackDrushBuildFailedException
+   */
+  public function build($options = []) {
+    $this->output()->writeln('Hey! Building the libs for you.');
+
+    $configPath = $this->writeWebpackConfig();
+
+    $output = [];
+    $exitCode = NULL;
+    $cmd = "yarn --cwd=" . DRUPAL_ROOT . " webpack --config $configPath";
+    exec($cmd, $output, $exitCode);
+
+    if ($exitCode !== 0) {
+      throw new WebpackDrushBuildFailedException();
+    }
+
+    $mapping = [];
+    $outputDir = $this->getOutputDir();
+    foreach ($output as $line) {
+      $matches = [];
+      if (preg_match('/^Entrypoint (.*) = (.*)/', $line, $matches)) {
+        list(, $entryPoint, $files) = $matches;
+        foreach (explode(' ', $files) as $fileName) {
+          $mapping[$entryPoint][] = "$outputDir/$fileName";
+        }
+      }
+    }
+
+    if (empty($mapping)) {
+      $this->output()->writeln('No libraries were written.');
+    }
+
+    $this->setBundleMapping($mapping);
+
+    $this->output()->writeln('Build successful.');
   }
 
   /**
@@ -32,24 +81,24 @@ class WebpackDrushCommands extends DrushCommands {
    * @usage drush wepback:serve
    *   Serve the js files.
    *
-   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
    * @throws \Drupal\webpack\WebpackDrushConfigWriteException
    */
   public function serve($options = []) {
     $this->output()->writeln('Hey!');
 
+    $configPath = $this->writeWebpackConfig();
+
+    $cmd = "yarn --cwd=" . DRUPAL_ROOT . " webpack-serve $configPath";
+    system($cmd);
+  }
+
+  protected function getOutputDir($createIfNeeded = FALSE) {
+    // TODO: Make the output dir configurable.
     $outputDir = 'public://webpack';
-    if (!file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
+    if ($createIfNeeded && !file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
       throw new WebpackDrushOutputDirNotWritableException();
     }
-
-    $entryPoints = $this->getEntryPoints();
-    $config = $this->getWebpackConfig($entryPoints, $outputDir);
-    $path = $this->fileSystem->realpath($this->writeWebpackConfig($config));
-
-    $cmd = "yarn --cwd=" . DRUPAL_ROOT . " webpack-serve $path";
-    $this->output()->writeln($cmd);
-    system($cmd);
+    return $outputDir;
   }
 
   protected function getEntryPoints() {
@@ -71,12 +120,13 @@ class WebpackDrushCommands extends DrushCommands {
     return $entryPoints;
   }
 
-  protected function getWebpackConfig($entryPoints, $outputDir) {
+  protected function getWebpackConfig() {
+    // TODO: Move this method to a separate service.
     $config = [
       'mode' => 'development',
       'output' => [
         'filename' => '[name].bundle.js',
-        'path' => $this->fileSystem->realpath($outputDir),
+        'path' => $this->fileSystem->realpath($this->getOutputDir(TRUE)),
       ],
 // Fuck it, it's dev.
 //      'optimization' => [
@@ -105,17 +155,37 @@ class WebpackDrushCommands extends DrushCommands {
 //      extensions: ['*', '.js', '.jsx']
 //  },
     ];
-    foreach ($entryPoints as $id => $path) {
+    foreach ($this->getEntryPoints() as $id => $path) {
       $config['entry'][$id] = DRUPAL_ROOT . '/' . $path;
     }
+
+    /** @var \Drupal\webpack\Plugin\ConfigProcessorPluginManager $configProcessorManager */
+    $configProcessorManager = \Drupal::service('plugin.manager.webpack.config_processor');
+    foreach ($configProcessorManager->getAllSorted() as $configProcessorPlugin) {
+      $configProcessorPlugin->processConfig($config);
+    }
+
+    $this->moduleHandler->alter('webpack_config', $config);
+
     return $config;
   }
 
-  protected function writeWebpackConfig($config) {
+  /**
+   * @return false|string
+   * @throws \Drupal\webpack\WebpackDrushConfigWriteException
+   */
+  protected function writeWebpackConfig() {
+    $config = $this->getWebpackConfig();
     // Functions don't work after json_encode.
-    $functions = $this->mapJsFunctions($config);
+    $functions = $this->mapJsEntities($config, '/^(function|() =>|.*=>).*/');
+    // Neither do regular expression literals. We're looking for regular
+    // expressions with a regular expression, so use @ as a pattern delimiter :)
+    $regexps = $this->mapJsEntities($config, '@^/.*/(a-z)*$@');
     // Encode and re-add the function bodys.
-    $configString = $this->decodeJsFunctions(json_encode($config, JSON_PRETTY_PRINT), $functions);
+    $configString = json_encode($config, JSON_PRETTY_PRINT);
+    $this->decodeJsEntities($configString, $functions);
+    $this->decodeJsEntities($configString, $regexps);
+
     $content = "module.exports = $configString";
     $path = file_unmanaged_save_data(
       $content,
@@ -124,34 +194,40 @@ class WebpackDrushCommands extends DrushCommands {
     if ($path === FALSE) {
       throw new WebpackDrushConfigWriteException();
     }
-    return $path;
+    return $this->fileSystem->realpath($path);
   }
 
-  protected function mapJsFunctions(&$input) {
-    $functions = [];
-    assert(is_array($input) || is_object($input));
+  protected function mapJsEntities(&$input, $pattern) {
+    $mapping = [];
+    assert(is_array($input));
     foreach ((array)$input as $key => $value) {
       if (is_array($value) || is_object($value)) {
-        $functions = array_merge($functions, $this->mapJsFunctions($input[$key]));
+        $mapping = array_merge($mapping, $this->mapJsEntities($input[$key], $pattern));
       }
-      if (is_string($value) && strpos($value, 'function') === 0) {
-        $hash = hash('sha256', $value);
-        $functions["\"$hash\""] = $value;
+      if (is_string($value) && preg_match($pattern, $value)) {
+        $hash = $this->hash($value);
+        $mapping["\"$hash\""] = $value;
         $input[$key] = $hash;
       }
     }
-    return $functions;
+    return $mapping;
   }
 
-  protected function decodeJsFunctions($string, $functions) {
-    return str_replace(array_keys($functions), array_values($functions), $string);
+  protected function hash($value) {
+    return hash('sha256', $value);
+  }
+
+  protected function decodeJsEntities(&$string, $mapping) {
+    $string = str_replace(array_keys($mapping), array_values($mapping), $string);
   }
 
 }
 
+class WebpackDrushConfigWriteException extends \Exception {}
+
 class WebpackDrushOutputDirNotWritableException extends \Exception {}
 
-class WebpackDrushConfigWriteException extends \Exception {}
+class WebpackDrushBuildFailedException extends \Exception {}
 
 /*
 
@@ -166,29 +242,39 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 
 // DONE: Build a dynamic webpack config file with CommonChunksPlugin to leverage long term vendor caching.
 
-// TODO: Decorate the asset resolver service.
+// DONE: Decorate the asset resolver service.
 
-// TODO: Implement hook_js_alter and remove all files handled by webpack from $js.
+// DONE: In the asset resolver, check if the dev server is available and add its external file if so.
 
-// TODO: In the asset resolver, check if the dev server is available and add its external file if so.
+// DONE: Write a drush command to build all the webpack libraries.
 
-// TODO: Build the entry file names
+// DONE: Check if the build exists before unsetting a lib from standard processing.
 
-// TODO: Write a drush command to build all the webpack libraries.
+// DONE: Add the ability to configure webpack config additions (plugin system).
+
+// DONE: Add the ability to configure webpack config additions (alter hook).
+
+// DONE: Add webpack_babel.
+
+// TODO: Add webpack_react.
+
+// TODO: Add webpack_vue.
+
+// TODO: Add whitespace to function and regexp regexps :).
+
+// TODO: Add separation for vendor and each lib.
 
 // TODO: Implement hook_requirements that checks if the required npm packages are installed.
 
 // TODO: Don't do any processing when the npm packages aren't there.
 
-// TODO: Check if the build exists before unsetting a lib from standard processing.
-
-// TODO: Add separation for vendor and each lib.
-
-// TODO: Add the ability to configure webpack config additions (alter hook).
+// TODO: Move config building to a dedicated service.
 
 // TODO: Add caching in the decorated resolver.
 
 // TODO: Add the ability to override the executable (yarn).
+
+// TODO: Move the entry building to a dedicated plugin.
 
 // TODO: Make the webpack-serve port configurable.
 
@@ -206,10 +292,16 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 
 // TODO: Instead of checking the dev mode, check if a process with drush webpack:serve is running.
 
-// TODO: Add webpack_babel.
+// TODO: Find a way to tap into webpack-serve output to get the generated bundles.
 
-// TODO: Add webpack_vue.
+// TODO: Find a way to output vendor files from all entries in a single chunk.
 
 // TODO: Make it possible to use arrow functions in mapJsFunctions (regexp).
+
+// TODO: Add documentation.
+
+// TODO: Include the names of the built files in the output of webpack:build.
+
+// TODO: Add meaningful messages to exceptions.
 
  */

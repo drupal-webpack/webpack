@@ -19,6 +19,11 @@ trait WebpackLibrariesTrait {
    */
   protected $themeHandler;
 
+  /**
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
   protected function getAllLibraries() {
     $libraries = [];
     $extensions = array_merge(
@@ -43,6 +48,14 @@ trait WebpackLibrariesTrait {
     $filename = basename($filepath, '.js');
     list($extension, $libraryName) = explode('/', $libraryId);
     return "$extension-$libraryName-$filename";
+  }
+
+  protected function setBundleMapping($mapping) {
+    $this->state->set('webpack_bundle_mapping', $mapping);
+  }
+
+  protected function getBundleMapping() {
+    return $this->state->get('webpack_bundle_mapping');
   }
 
 }

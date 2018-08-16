@@ -5,6 +5,7 @@ namespace Drupal\webpack\Asset;
 use Drupal\Core\Asset\AssetResolverInterface;
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Asset\LibraryDiscoveryInterface;
+use Drupal\Core\State\StateInterface;
 use Drupal\webpack\WebpackLibrariesTrait;
 use ReflectionMethod;
 
@@ -17,9 +18,10 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    */
   protected $assetResolver;
 
-  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery) {
+  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state) {
     $this->assetResolver = $assetResolver;
     $this->libraryDiscovery = $libraryDiscovery;
+    $this->state = $state;
   }
 
   /**
@@ -32,8 +34,20 @@ class DecoratedAssetResolver implements AssetResolverInterface {
   /**
    * {@inheritdoc}
    * @throws \Drupal\webpack\Asset\WebpackAssetUnsupportedTypeException
+   * @throws \Drupal\webpack\Asset\WebpackAssetBundleMappingNotFoundException
+   * @throws \Drupal\webpack\Asset\WebpackAssetBundleFileMissingException
    */
   public function getJsAssets(AttachedAssetsInterface $assets, $optimize) {
+    $devMode = $this->devServerEnabled();
+    $bundleMapping = $this->getBundleMapping();
+    $result = $this->assetResolver->getJsAssets($assets, $optimize);
+
+    if (!$devMode && !$bundleMapping) {
+      // We're in prod mode and there's no mapping of library files. Return the
+      // result of the core resolver.
+      return $result;
+    }
+
     $webpackLibs = [
       'header' => [],
       'footer' => [],
@@ -54,9 +68,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
     }
     $assets->setLibraries($libraries);
 
-    $result = $this->assetResolver->getJsAssets($assets, $optimize);
-
-    $devMode = TRUE;
+    // TODO: Make this configurable. See ::devServerEnabled.
     $serveUrl = 'http://localhost:8080';
 
     foreach (['header', 'footer'] as $scopeKey => $scope) {
@@ -68,8 +80,10 @@ class DecoratedAssetResolver implements AssetResolverInterface {
           }
           $path = $jsAssetInfo['data'];
           $fileId = $this->getJsFileId($libraryId, $path);
-          $bundleName = "$fileId.bundle.js";
           if ($devMode) {
+            // TODO: Get the files to include from the output of webpack:serve
+            //       after finding a way to tap into its output.
+            $bundleName = "$fileId.bundle.js";
             $result[$scopeKey][$path] = [
               'type' => 'file',
               'group' => JS_DEFAULT,
@@ -84,30 +98,67 @@ class DecoratedAssetResolver implements AssetResolverInterface {
               'data' => "$serveUrl/$bundleName",
             ];
           } else {
-            // TODO: Add the production build.
+            if (!isset($bundleMapping[$fileId])) {
+              // Did you forget to run `drush webpack:build`?
+              throw new WebpackAssetBundleMappingNotFoundException();
+            }
+            foreach ($bundleMapping[$fileId] as $bundleFilePath) {
+              if (!file_exists($bundleFilePath)) {
+                // File had been built but it was removed from the filesystem
+                // afterwards.
+                throw new WebpackAssetBundleFileMissingException();
+              }
+              $result[$scopeKey][$path] = [
+                'type' => 'file',
+                'group' => JS_DEFAULT,
+                'weight' => 0,
+                'cache' => FALSE,
+                'preprocess' => FALSE,
+                'attributes' => [],
+                'version' => NULL,
+                'browsers' => [],
+                'scope' => $scope,
+                'minified' => TRUE,
+                'data' => "$bundleFilePath",
+              ];
+            }
           }
         }
       }
     }
 
-    // TODO: Find a way to output vendor files from all entries in a single chunk.
-
-    // TODO: Prepend the vendor file to the footer (or header if there were any header libs).
-
-    // TODO: Add the processed files to corresponding parts.
-
-    // TODO: Check for dev mode.
-
     return $result;
   }
 
   protected function getLibrariesToLoad(AttachedAssetsInterface $assets) {
-    // getLibrariesToLoad in AssetResolver is protected.
-    $r = new ReflectionMethod($this->assetResolver, 'getLibrariesToLoad');
-    $r->setAccessible(true);
-    return $r->invoke($this->assetResolver, $assets);
+    try {
+      // getLibrariesToLoad in AssetResolver is protected.
+      $r = new ReflectionMethod($this->assetResolver, 'getLibrariesToLoad');
+      $r->setAccessible(true);
+      return $r->invoke($this->assetResolver, $assets);
+    } catch (\ReflectionException $ex) {
+      // This won't happen. We know that the AssetResolver has the
+      // getLibrariesToLoad method. This block is here just for the IDE to stop
+      // complaining.
+    }
+  }
+
+  protected function devServerEnabled() {
+    // TODO: Make the dev server port configurable.
+    $connection = @fsockopen('localhost', '8080');
+
+    if (is_resource($connection)) {
+      fclose($connection);
+      return true;
+    }
+
+    return false;
   }
 
 }
 
 class WebpackAssetUnsupportedTypeException extends \Exception {}
+
+class WebpackAssetBundleMappingNotFoundException extends \Exception {}
+
+class WebpackAssetBundleFileMissingException extends \Exception {}
