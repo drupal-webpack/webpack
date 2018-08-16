@@ -1,14 +1,22 @@
 <?php
 
 /**
- * Implements hook_library_info_alter().
+ * Implements hook_page_attachments.
  */
-function webpack_test_libs_library_info_alter(&$libraries, $extension) {
-  $t=1;
-}
-
 function webpack_test_libs_page_attachments(array &$attachments) {
   // Attach the test libraries unconditionally .
   $attachments['#attached']['library'][] = 'webpack_test_libs/test';
   $attachments['#attached']['library'][] = 'webpack_test_libs/test_header';
+  $attachments['#attached']['library'][] = 'webpack_test_libs/my_library';
+}
+
+/**
+ * Implements hook_webpack_config_alter().
+ *
+ * @throws \Exception
+ */
+function webpack_test_libs_webpack_config_alter(&$config) {
+  if (!isset($config['output'])) {
+    throw new \Exception('Output not found in webpack config.');
+  }
 }
