@@ -2,4 +2,14 @@ services:
   asset.resolver.webpack:
     class: Drupal\webpack\Asset\DecoratedAssetResolver
     decorates: asset.resolver
-    arguments: [ '@asset.resolver.webpack.inner', '@library.discovery' ]
+    arguments: [ '@asset.resolver.webpack.inner', '@library.discovery', '@state' ]
+
+  # Plugin manager for fields.
+  plugin.manager.webpack.config_processor:
+    class: Drupal\webpack\Plugin\ConfigProcessorPluginManager
+    arguments:
+    - 'Plugin/Webpack/ConfigProcessors'
+    - '@container.namespaces'
+    - '@module_handler'
+    - '\Drupal\webpack\Plugin\ConfigProcessorPluginInterface'
+    - '\Drupal\webpack\Annotation\WebpackConfigProcessor'
