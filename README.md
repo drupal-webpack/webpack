@@ -1,37 +1,31 @@
 # Webpack
 
-Use [webpack](https://webpack.js.org/) to transpile, bundle and minify Drupal's javascript files. Work in progress.
-
-## Should I use it now?
-
-No, unless you want to test it out and contribute. Right now it's just a working prototype without any settings. The values are hardcoded for a composer project with a `package.json` in the repository root and libraries in `modules/custom`.
+Integrates Drupal with [webpack](https://webpack.js.org/).
 
 ## What it does?
 
-This module will allow developers to write their Drupal libraries in modern javascript, as well as import modules from npm.
+The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers (see [Webpack Babel](https://drupal.org/project/webpack_babel)).
 
-## How it works?
+## Dependencies
 
-Right now it decorates the `asset.js.collection_renderer` service and bundles all the js libraries matching criteria into a single bundle. This is going to change, as decorating the `asset.resolver` service seems to be much more promising.
-
-## Contributing
-
-If you'd like to contribute
-
-- Find a TODO comment in code.
-- Search for an existing task for this TODO item in the [issue queue](https://www.drupal.org/project/issues/webpack?status=All&categories=All).
-  - If there is one, check the progress and help there if possible.
-  - Otherwise, create a new issue with the name of the todo and assign it to yourself
-- Usually it's best to discuss the solution before writing any patches.
+Right now the module assumes that `yarn` is installed and available in the PATH.
 
 ## Setup
 
-Your project needs to have a `package.json` file somewhere. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide `composer.json`. Placing the file inside the webroot would work too.
+Your project needs to have a `package.json` file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide `composer.json`. Placing the file inside the webroot would work too. If you don't have such a file, fear not. `yarn init -yp` will generate an empty one.
 
-If you don't have such a file, fear not. `yarn init -yp` will generate an empty one.
+Once you've got `package.json`, add the following npm dependencies.
+`yarn add webpack` 
+`yarn add webpack-serve --dev` 
 
-`yarn add webpack webpack-serve webpack-cli--dev` 
+## Usage
 
-Babel setup
+Add `webpack: true` to your library definition in `module_name.libraries.yml`.
 
-`yarn add  babel-core babel-loader babel-preset-env --dev`
+For local development, start the dev server with `yarn webpack:serve` and reload the page. The module will detect it and inject the development version (with live reload).
+
+On the server, add `yarn webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
+
+## Should I use it now?
+
+Go ahead. It's still in alpha but the usage won't change much.

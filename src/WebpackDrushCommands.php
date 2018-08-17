@@ -128,7 +128,6 @@ class WebpackDrushCommands extends DrushCommands {
         'filename' => '[name].bundle.js',
         'path' => $this->fileSystem->realpath($this->getOutputDir(TRUE)),
       ],
-// Fuck it, it's dev.
 //      'optimization' => [
 //        'splitChunks' => [
 //          'chunks' => 'all',
@@ -256,9 +255,21 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 
 // DONE: Add webpack_babel.
 
-// TODO: Add webpack_react.
+// TODO: Publish the presentation and link it in the modules's description under How does it work.
+
+// TODO: Add a second $context param to processConfig.
 
 // TODO: Add webpack_vue.
+
+// TODO: Update the presentation to show examples of webpack, webpack_babel and webpack_vuejs.
+
+// TODO: Add a link to the presentation in all the readmes.
+
+// TODO: Add example usage to webpack's README.
+
+// TODO: Add example usage to webpack_babel's README.
+
+// TODO: Add example usage to webpack_vuejs' README.
 
 // TODO: Add whitespace to function and regexp regexps :).
 
@@ -267,6 +278,8 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 // TODO: Implement hook_requirements that checks if the required npm packages are installed.
 
 // TODO: Don't do any processing when the npm packages aren't there.
+
+// TODO: Add webpack_react.
 
 // TODO: Move config building to a dedicated service.
 

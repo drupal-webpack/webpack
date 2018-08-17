@@ -1,29 +1,31 @@
-Use <a href="https://webpack.js.org/" target="_blank">webpack</a> to bundle javascript files, transpile them and include modules from a site-wide package.json file.
+<h2>Webpack</h2>
 
-<h2>Should I use it now?</h2>
+Integrates Drupal with <a href="https://webpack.js.org/" target="_blank">Webpack</a>.
 
-No, unless you want to test it out and contribute. Right now it's just a working prototype without any settings. The values are hardcoded for a composer project with a <code>package.json</code> in the repository root (with at least <code>webpack</code> and <code>webpack-cli</code>) and libraries in <code>modules/custom</code>.
+<h3>What it does?</h3>
 
-<h2>What it does?</h2>
+The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers (see <a href="https://drupal.org/project/webpack_babel" target="_blank">Webpack Babel</a>).
 
-This module lets developers write their Drupal libraries in modern javascript and import modules from npm.
+<h3>Dependencies</h3>
 
-<h2>How it works?</h2>
+Right now the module assumes that <code>yarn</code> is installed and available in the PATH.
 
-Right now it decorates the <code>asset.js.collection_renderer</code> service and bundles all the js libraries matching criteria into a single file. This is going to change, as decorating the <code>asset.resolver</code> service seems to be much more promising.
+<h3>Setup</h3>
 
-<h2>How can I contribute?</h2>
+Your project needs to have a <code>package.json</code> file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide <code>composer.json</code>. Placing the file inside the webroot would work too. If you don't have such a file, fear not. <code>yarn init -yp</code> will generate an empty one.
 
-Suggest features or improvements by creating a <a href="https://www.drupal.org/node/add/project-issue/webpack" target="_blank">new issue</a>. Alternatively,
+Once you've got <code>package.json</code>, add the following npm dependencies.
+<code>yarn add webpack</code>
+<code>yarn add webpack-serve --dev</code>
 
-<ul>
-  <li>Find a TODO comment in code.</li>
-  <li>Search for an existing task for this TODO item in the <a href="https://www.drupal.org/project/issues/webpack?status=All&categories=All" target="_blank">issue queue</a>.
-    <ul>
-      <li>If there is one, check the progress and help there if possible.</li>
-      <li>Otherwise, create a new issue with the name of the todo and assign it to yourself.</li>
-    </ul>
-  </li>
-</ul>
+<h3>Usage</h3>
 
-Usually, it's a good idea to discuss the problem in the issue before writing patches. Ping @blazey in #webpack on <a href="https://drupalchat.eu/channel/webpack" target="_blank">drupalchat.eu</a> (or slack).
+Add <code>webpack: true</code> to your library definition in <code>module_name.libraries.yml</code>.
+
+For local development, start the dev server with <code>yarn webpack:serve</code> and reload the page. The module will detect it and inject the development version (with live reload).
+
+On the server, add <code>yarn webpack:build</code> to your after-deploy steps. The bundles will be written to <code>public://webpack</code> and included automatically.
+
+<h3>Should I use it now?</h3>
+
+Go ahead. It's still in alpha but the usage won't change much.
