@@ -2,7 +2,11 @@ services:
   asset.resolver.webpack:
     class: Drupal\webpack\Asset\DecoratedAssetResolver
     decorates: asset.resolver
-    arguments: [ '@asset.resolver.webpack.inner', '@library.discovery', '@state' ]
+    arguments: [ '@asset.resolver.webpack.inner', '@library.discovery', '@state' , '@logger.channel.webpack']
+
+  logger.channel.webpack:
+    parent: logger.channel_base
+    arguments: ['webpack']
 
   # Plugin manager for fields.
   plugin.manager.webpack.config_processor:

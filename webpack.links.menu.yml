@@ -1,0 +1,6 @@
+webpack.webpack_settings_form:
+  title: 'Webpack'
+  route_name: webpack.webpack_settings_form
+  description: 'Webpack configuration'
+  parent: system.admin_config_development
+  weight: 99

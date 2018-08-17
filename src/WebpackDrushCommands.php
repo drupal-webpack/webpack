@@ -3,6 +3,7 @@
 namespace Drupal\webpack;
 
 use Drupal\Core\Asset\LibraryDiscoveryInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
@@ -16,14 +17,33 @@ class WebpackDrushCommands extends DrushCommands {
 
   use WebpackLibrariesTrait;
 
+  /**
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
   protected $fileSystem;
 
-  public function __construct(ModuleHandlerInterface $moduleHandler, ThemeHandlerInterface $themeHandler, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, FileSystemInterface $fileSystem) {
+  /**
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $webpackConfig;
+
+  /**
+   * WebpackDrushCommands constructor.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery
+   * @param \Drupal\Core\State\StateInterface $state
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   */
+  public function __construct(ModuleHandlerInterface $moduleHandler, ThemeHandlerInterface $themeHandler, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, FileSystemInterface $fileSystem, ConfigFactoryInterface $configFactory) {
     $this->moduleHandler = $moduleHandler;
     $this->themeHandler = $themeHandler;
     $this->libraryDiscovery = $libraryDiscovery;
     $this->state = $state;
     $this->fileSystem = $fileSystem;
+    $this->webpackConfig = $configFactory->get('webpack.settings');
   }
 
   /**
@@ -41,7 +61,14 @@ class WebpackDrushCommands extends DrushCommands {
   public function build($options = []) {
     $this->output()->writeln('Hey! Building the libs for you.');
 
-    $configPath = $this->writeWebpackConfig();
+    $config = $this->getWebpackConfig();
+
+    if (!$this->validateConfig($config)){
+      // Config is invalid. Bail out.
+      return;
+    }
+
+    $configPath = $this->writeWebpackConfig($config);
 
     $output = [];
     $exitCode = NULL;
@@ -66,10 +93,11 @@ class WebpackDrushCommands extends DrushCommands {
 
     if (empty($mapping)) {
       $this->output()->writeln('No libraries were written.');
+      $this->setBundleMapping(NULL);
+      return;
     }
 
     $this->setBundleMapping($mapping);
-
     $this->output()->writeln('Build successful.');
   }
 
@@ -92,15 +120,27 @@ class WebpackDrushCommands extends DrushCommands {
     system($cmd);
   }
 
+  /**
+   * Returns the path to the build output directory.
+   *
+   * @param bool $createIfNeeded
+   *
+   * @return string
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   */
   protected function getOutputDir($createIfNeeded = FALSE) {
-    // TODO: Make the output dir configurable.
-    $outputDir = 'public://webpack';
+    $outputDir = $this->webpackConfig->get('output_path');
     if ($createIfNeeded && !file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
       throw new WebpackDrushOutputDirNotWritableException();
     }
     return $outputDir;
   }
 
+  /**
+   * Returns an array of js files that should be treated with webpack.
+   *
+   * @return array
+   */
   protected function getEntryPoints() {
     $entryPoints = [];
     foreach ($this->getAllLibraries() as $extension => $libraries) {
@@ -120,6 +160,12 @@ class WebpackDrushCommands extends DrushCommands {
     return $entryPoints;
   }
 
+  /**
+   * Returns the fully-built webpack config.
+   *
+   * @return array
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   */
   protected function getWebpackConfig() {
     // TODO: Move this method to a separate service.
     $config = [
@@ -170,11 +216,31 @@ class WebpackDrushCommands extends DrushCommands {
   }
 
   /**
+   * Checks if the given config array is valid.
+   *
+   * @param array $config
+   *   The full webpack config.
+   *
+   * @return bool
+   */
+  protected function validateConfig($config) {
+    if (!isset($config['entry']) || empty($config['entry'])) {
+      $this->output()->writeln('There are no files to process.');
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  /**
+   * Writes the webpack config to a temp dir.
+   *
+   * @param array $config
+   *   The config to write.
+   *
    * @return false|string
    * @throws \Drupal\webpack\WebpackDrushConfigWriteException
    */
-  protected function writeWebpackConfig() {
-    $config = $this->getWebpackConfig();
+  protected function writeWebpackConfig($config) {
     // Functions don't work after json_encode.
     $functions = $this->mapJsEntities($config, '/^(function|() =>|.*=>).*/');
     // Neither do regular expression literals. We're looking for regular
@@ -196,6 +262,15 @@ class WebpackDrushCommands extends DrushCommands {
     return $this->fileSystem->realpath($path);
   }
 
+  /**
+   * Recursively looks for strings matching a given pattern and replaces them
+   * with their hashes. Returns the map of replaced items.
+   *
+   * @param array $input
+   * @param string $pattern
+   *
+   * @return array
+   */
   protected function mapJsEntities(&$input, $pattern) {
     $mapping = [];
     assert(is_array($input));
@@ -212,10 +287,24 @@ class WebpackDrushCommands extends DrushCommands {
     return $mapping;
   }
 
+  /**
+   * Returns a hash of the given value..
+   *
+   * @param string $value
+   *
+   * @return string
+   */
   protected function hash($value) {
     return hash('sha256', $value);
   }
 
+  /**
+   * Replaces all occurrences of the keys of the mapping array with the
+   * corresponding values.
+   *
+   * @param string &$string
+   * @param array $mapping
+   */
   protected function decodeJsEntities(&$string, $mapping) {
     $string = str_replace(array_keys($mapping), array_values($mapping), $string);
   }
@@ -257,65 +346,11 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 
 // DONE: Publish the presentation and link it in the modules's description under How does it work.
 
-// TODO: Add a second $context param to processConfig.
-
 // TODO: Add webpack_vue.
-
-// TODO: Update the presentation to show examples of webpack, webpack_babel and webpack_vuejs.
-
-// TODO: Add a link to the presentation in all the readmes.
-
-// TODO: Add example usage to webpack's README.
 
 // TODO: Add example usage to webpack_babel's README.
 
 // TODO: Add example usage to webpack_vuejs' README.
-
-// TODO: Add whitespace to function and regexp regexps :).
-
-// TODO: Add separation for vendor and each lib.
-
-// TODO: Implement hook_requirements that checks if the required npm packages are installed.
-
-// TODO: Don't do any processing when the npm packages aren't there.
-
-// TODO: Add webpack_react.
-
-// TODO: Move config building to a dedicated service.
-
-// TODO: Add caching in the decorated resolver.
-
-// TODO: Add the ability to override the executable (yarn).
-
-// TODO: Move the entry building to a dedicated plugin.
-
-// TODO: Make the webpack-serve port configurable.
-
-// TODO: Write an integration testing infrastructure based on drupal-dev.io
-
-// TODO: Write a test module with an example webpack library.
-
-// TODO: Write a test for getEntryPoints.
-
-// TODO: Write a test for getWebpackConfig.
-
-// TODO: Write a test for writeWebpackConfig.
-
-// TODO: Write an install drush command that will install the dependencies via yarn or npm.
-
-// TODO: Build a plugin system for enhancing the webpack config.
-
-// TODO: Instead of checking the dev mode, check if a process with drush webpack:serve is running.
-
-// TODO: Find a way to tap into webpack-serve output to get the generated bundles.
-
-// TODO: Find a way to output vendor files from all entries in a single chunk.
-
-// TODO: Make it possible to use arrow functions in mapJsFunctions (regexp).
-
-// TODO: Add documentation.
-
-// TODO: Include the names of the built files in the output of webpack:build.
 
 // TODO: Add meaningful messages to exceptions.
 
