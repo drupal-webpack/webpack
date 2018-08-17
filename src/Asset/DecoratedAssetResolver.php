@@ -7,6 +7,7 @@ use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Asset\LibraryDiscoveryInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\webpack\WebpackLibrariesTrait;
+use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 
 class DecoratedAssetResolver implements AssetResolverInterface {
@@ -18,10 +19,16 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    */
   protected $assetResolver;
 
-  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state) {
+  /**
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, LoggerInterface $logger) {
     $this->assetResolver = $assetResolver;
     $this->libraryDiscovery = $libraryDiscovery;
     $this->state = $state;
+    $this->logger = $logger;
   }
 
   /**
@@ -33,6 +40,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
 
   /**
    * {@inheritdoc}
+   *
    * @throws \Drupal\webpack\Asset\WebpackAssetUnsupportedTypeException
    * @throws \Drupal\webpack\Asset\WebpackAssetBundleMappingNotFoundException
    * @throws \Drupal\webpack\Asset\WebpackAssetBundleFileMissingException
@@ -100,13 +108,15 @@ class DecoratedAssetResolver implements AssetResolverInterface {
           } else {
             if (!isset($bundleMapping[$fileId])) {
               // Did you forget to run `drush webpack:build`?
-              throw new WebpackAssetBundleMappingNotFoundException();
+              $this->logger->error('Missing bundle mapping for @fileId. Run `drush webpack:build` to fix.', ['@fileId' => $fileId]);
+              continue;
             }
             foreach ($bundleMapping[$fileId] as $bundleFilePath) {
               if (!file_exists($bundleFilePath)) {
                 // File had been built but it was removed from the filesystem
                 // afterwards.
-                throw new WebpackAssetBundleFileMissingException();
+                $this->logger->error('@bundleFilePath not found. Run `drush webpack:build` to fix.', ['$@bundleFilePath' => $bundleFilePath]);
+                continue;
               }
               $result[$scopeKey][$path] = [
                 'type' => 'file',
