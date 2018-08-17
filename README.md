@@ -26,6 +26,10 @@ For local development, start the dev server with `yarn webpack:serve` and reload
 
 On the server, add `yarn webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
 
+## How it works?
+
+Setup steps and the modus operandi have been described in [Progressive Decoupling - The why and the how](https://drupal-progressive-decoupling.github.io/#/composer-require-webpack) at Decoupled Drupal Days NY 2018.
+
 ## Should I use it now?
 
-Go ahead. It's still in alpha but the usage won't change much.
+It's still in alpha but the usage won't change much.

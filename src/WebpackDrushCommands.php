@@ -255,7 +255,7 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 
 // DONE: Add webpack_babel.
 
-// TODO: Publish the presentation and link it in the modules's description under How does it work.
+// DONE: Publish the presentation and link it in the modules's description under How does it work.
 
 // TODO: Add a second $context param to processConfig.
 
@@ -290,6 +290,8 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 // TODO: Move the entry building to a dedicated plugin.
 
 // TODO: Make the webpack-serve port configurable.
+
+// TODO: Write an integration testing infrastructure based on drupal-dev.io
 
 // TODO: Write a test module with an example webpack library.
 
