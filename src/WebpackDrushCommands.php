@@ -257,65 +257,11 @@ The libraries need to be in the webpack group (check feasibility) and have minif
 
 // DONE: Publish the presentation and link it in the modules's description under How does it work.
 
-// TODO: Add a second $context param to processConfig.
-
 // TODO: Add webpack_vue.
-
-// TODO: Update the presentation to show examples of webpack, webpack_babel and webpack_vuejs.
-
-// TODO: Add a link to the presentation in all the readmes.
-
-// TODO: Add example usage to webpack's README.
 
 // TODO: Add example usage to webpack_babel's README.
 
 // TODO: Add example usage to webpack_vuejs' README.
-
-// TODO: Add whitespace to function and regexp regexps :).
-
-// TODO: Add separation for vendor and each lib.
-
-// TODO: Implement hook_requirements that checks if the required npm packages are installed.
-
-// TODO: Don't do any processing when the npm packages aren't there.
-
-// TODO: Add webpack_react.
-
-// TODO: Move config building to a dedicated service.
-
-// TODO: Add caching in the decorated resolver.
-
-// TODO: Add the ability to override the executable (yarn).
-
-// TODO: Move the entry building to a dedicated plugin.
-
-// TODO: Make the webpack-serve port configurable.
-
-// TODO: Write an integration testing infrastructure based on drupal-dev.io
-
-// TODO: Write a test module with an example webpack library.
-
-// TODO: Write a test for getEntryPoints.
-
-// TODO: Write a test for getWebpackConfig.
-
-// TODO: Write a test for writeWebpackConfig.
-
-// TODO: Write an install drush command that will install the dependencies via yarn or npm.
-
-// TODO: Build a plugin system for enhancing the webpack config.
-
-// TODO: Instead of checking the dev mode, check if a process with drush webpack:serve is running.
-
-// TODO: Find a way to tap into webpack-serve output to get the generated bundles.
-
-// TODO: Find a way to output vendor files from all entries in a single chunk.
-
-// TODO: Make it possible to use arrow functions in mapJsFunctions (regexp).
-
-// TODO: Add documentation.
-
-// TODO: Include the names of the built files in the output of webpack:build.
 
 // TODO: Add meaningful messages to exceptions.
 
