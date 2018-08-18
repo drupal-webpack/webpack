@@ -56,7 +56,7 @@ class WebpackDrushCommands extends DrushCommands {
   public function build($options = []) {
     $this->output()->writeln('Hey! Building the libs for you.');
 
-    $config = $this->getWebpackConfig();
+    $config = $this->getWebpackConfig(['command' => 'build']);
 
     if (!$this->validateConfig($config)){
       // Config is invalid. Bail out.
@@ -110,7 +110,7 @@ class WebpackDrushCommands extends DrushCommands {
   public function serve($options = []) {
     $this->output()->writeln('Hey!');
 
-    $configPath = $this->writeWebpackConfig($this->getWebpackConfig());
+    $configPath = $this->writeWebpackConfig($this->getWebpackConfig(['command' => 'serve']));
 
     $cmd = "yarn --cwd=" . DRUPAL_ROOT . " webpack-serve $configPath";
     system($cmd);
@@ -146,7 +146,7 @@ class WebpackDrushCommands extends DrushCommands {
    * @return array
    * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
    */
-  protected function getWebpackConfig() {
+  protected function getWebpackConfig($context) {
     // TODO: Move this method to a separate service.
     $config = [
       'mode' => 'development',
@@ -187,7 +187,7 @@ class WebpackDrushCommands extends DrushCommands {
     /** @var \Drupal\webpack\Plugin\ConfigProcessorPluginManager $configProcessorManager */
     $configProcessorManager = \Drupal::service('plugin.manager.webpack.config_processor');
     foreach ($configProcessorManager->getAllSorted() as $configProcessorPlugin) {
-      $configProcessorPlugin->processConfig($config);
+      $configProcessorPlugin->processConfig($config, $context);
     }
 
     $this->moduleHandler->alter('webpack_config', $config);
