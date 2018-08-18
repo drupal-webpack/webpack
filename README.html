@@ -26,6 +26,8 @@ For local development, start the dev server with <code>yarn webpack:serve</code>
 
 On the server, add <code>yarn webpack:build</code> to your after-deploy steps. The bundles will be written to <code>public://webpack</code> and included automatically.
 
+The output directory can be changed at <code>/admin/config/webpack/settings</code> e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building (<a href="https://github.com/drupal-webpack/webpack/blob/ea88591007c0444a8e6d95c02161bebbebcd41b0/src/WebpackLibrariesTrait.php#L81" target="_blank">details</a>).
+
 <h3>How it works?</h3>
 
 Setup steps and the modus operandi have been described in <a href="https://drupal-progressive-decoupling.github.io/#/composer-require-webpack" target="_blank">Progressive Decoupling - The why and the how</a> at Decoupled Drupal Days NY 2018.
