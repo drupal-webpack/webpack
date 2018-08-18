@@ -71,6 +71,9 @@ class WebpackDrushCommands extends DrushCommands {
     exec($cmd, $output, $exitCode);
 
     if ($exitCode !== 0) {
+      foreach ($output as $line) {
+        $this->output()->writeln($line);
+      }
       throw new WebpackDrushBuildFailedException();
     }
 
@@ -87,13 +90,23 @@ class WebpackDrushCommands extends DrushCommands {
     }
 
     if (empty($mapping)) {
-      $this->output()->writeln('No libraries were written.');
+      $this->output()->writeln('No files were written.');
       $this->setBundleMapping(NULL);
       return;
     }
 
     $this->setBundleMapping($mapping);
-    $this->output()->writeln('Build successful.');
+    $this->output()->writeln("Build successful. Files written to '$outputDir':");
+    foreach ($output as $line) {
+      if (strpos($line, 'Entrypoint ') === 0) {
+        $this->output()->writeln($line);
+      }
+    }
+
+    if ($this->getBundleMappingStorage() === 'config') {
+      $this->output()->writeln('');
+      $this->output()->writeln("WARNING: The output directory is outside of the public files directory. The config needs to be exported in order for the files to be loaded on other environments.");
+    }
   }
 
   /**
