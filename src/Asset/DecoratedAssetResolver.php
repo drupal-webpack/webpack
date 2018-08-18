@@ -25,6 +25,15 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    */
   protected $logger;
 
+  /**
+   * DecoratedAssetResolver constructor.
+   *
+   * @param \Drupal\Core\Asset\AssetResolverInterface $assetResolver
+   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery
+   * @param \Drupal\Core\State\StateInterface $state
+   * @param \Psr\Log\LoggerInterface $logger
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   */
   public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, LoggerInterface $logger, ConfigFactoryInterface $configFactory) {
     $this->assetResolver = $assetResolver;
     $this->libraryDiscovery = $libraryDiscovery;
@@ -141,6 +150,13 @@ class DecoratedAssetResolver implements AssetResolverInterface {
     return $result;
   }
 
+  /**
+   * Returns the result of AssetResolver::getLibrariesToLoad (it's protected).
+   *
+   * @param \Drupal\Core\Asset\AttachedAssetsInterface $assets
+   *
+   * @return array
+   */
   protected function getLibrariesToLoad(AttachedAssetsInterface $assets) {
     try {
       // getLibrariesToLoad in AssetResolver is protected.
@@ -154,6 +170,11 @@ class DecoratedAssetResolver implements AssetResolverInterface {
     }
   }
 
+  /**
+   * Returns true when the dev server is enabled.
+   *
+   * @return bool
+   */
   protected function devServerEnabled() {
     // TODO: Make the dev server port configurable.
     $connection = @fsockopen('localhost', '8080');

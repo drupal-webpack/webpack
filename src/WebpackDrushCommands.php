@@ -299,39 +299,8 @@ class WebpackDrushBuildFailedException extends \Exception {}
 
 /*
 
-Decorate the AssetResolver service.
-
-For js files, take the assets from the header and from the footer, look for the
-"webpack" group and run these through webpack.
-
-The libraries need to be in the webpack group (check feasibility) and have minified: true.
-
-// DONE: Write a drush command that will serve the bundle consisting of all webpack libraries defined in enabled modules / themes.
-
-// DONE: Build a dynamic webpack config file with CommonChunksPlugin to leverage long term vendor caching.
-
-// DONE: Decorate the asset resolver service.
-
-// DONE: In the asset resolver, check if the dev server is available and add its external file if so.
-
-// DONE: Write a drush command to build all the webpack libraries.
-
-// DONE: Check if the build exists before unsetting a lib from standard processing.
-
-// DONE: Add the ability to configure webpack config additions (plugin system).
-
-// DONE: Add the ability to configure webpack config additions (alter hook).
-
-// DONE: Add webpack_babel.
-
-// DONE: Publish the presentation and link it in the modules's description under How does it work.
-
-// TODO: Add webpack_vue.
-
 // TODO: Add example usage to webpack_babel's README.
 
 // TODO: Add example usage to webpack_vuejs' README.
-
-// TODO: Add meaningful messages to exceptions.
 
  */
