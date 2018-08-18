@@ -5,6 +5,7 @@ namespace Drupal\webpack\Asset;
 use Drupal\Core\Asset\AssetResolverInterface;
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Asset\LibraryDiscoveryInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\webpack\WebpackLibrariesTrait;
 use Psr\Log\LoggerInterface;
@@ -24,11 +25,12 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    */
   protected $logger;
 
-  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, LoggerInterface $logger) {
+  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, LoggerInterface $logger, ConfigFactoryInterface $configFactory) {
     $this->assetResolver = $assetResolver;
     $this->libraryDiscovery = $libraryDiscovery;
     $this->state = $state;
     $this->logger = $logger;
+    $this->configFactory = $configFactory;
   }
 
   /**
@@ -42,8 +44,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    * {@inheritdoc}
    *
    * @throws \Drupal\webpack\Asset\WebpackAssetUnsupportedTypeException
-   * @throws \Drupal\webpack\Asset\WebpackAssetBundleMappingNotFoundException
-   * @throws \Drupal\webpack\Asset\WebpackAssetBundleFileMissingException
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
    */
   public function getJsAssets(AttachedAssetsInterface $assets, $optimize) {
     $devMode = $this->devServerEnabled();
