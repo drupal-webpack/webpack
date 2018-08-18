@@ -10,7 +10,7 @@ class ConfigProcessorPluginManager extends DefaultPluginManager {
   /**
    * Static cache of plugin instances.
    *
-   * @var \Drupal\webpack\Plugin\ConfigProcessorInterface[]
+   * @var \Drupal\webpack\Plugin\ConfigProcessorPluginInterface[]
    */
   protected $instances;
 

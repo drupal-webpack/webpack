@@ -17,7 +17,7 @@ class Output extends ConfigProcessorBase {
   /**
    * {@inheritdoc}
    */
-  public function processConfig(&$config) {
+  public function processConfig(&$config, $context) {
     // TODO: Move output building here from WebpackDrushCommands.
   }
 
