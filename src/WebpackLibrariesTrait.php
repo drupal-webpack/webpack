@@ -35,6 +35,11 @@ trait WebpackLibrariesTrait {
    */
   protected $configFactory;
 
+  /**
+   * Returns all the libraries defined by enabled modules and themes.
+   *
+   * @return array
+   */
   protected function getAllLibraries() {
     $libraries = [];
     $extensions = array_merge(
@@ -51,10 +56,25 @@ trait WebpackLibrariesTrait {
     return $libraries;
   }
 
+  /**
+   * Returns true if the given library should be handled by webpack.
+   *
+   * @param $library
+   *
+   * @return bool
+   */
   protected function isWebpackLib($library) {
     return isset($library['webpack']) && $library['webpack'];
   }
 
+  /**
+   * Returns a unique id for a js file comprising the module, lib and file names.
+   *
+   * @param string $libraryId
+   * @param string $filepath
+   *
+   * @return string
+   */
   protected function getJsFileId($libraryId, $filepath) {
     $filename = basename($filepath, '.js');
     list($extension, $libraryName) = explode('/', $libraryId);
