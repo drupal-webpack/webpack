@@ -2,6 +2,12 @@
 
 namespace Drupal\webpack;
 
+use Drupal\Core\Asset\LibraryDiscoveryInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\Core\State\StateInterface;
+
 trait WebpackLibrariesTrait {
 
   /**
@@ -23,6 +29,11 @@ trait WebpackLibrariesTrait {
    * @var \Drupal\Core\State\StateInterface
    */
   protected $state;
+
+  /**
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
 
   protected function getAllLibraries() {
     $libraries = [];
@@ -50,11 +61,82 @@ trait WebpackLibrariesTrait {
     return "$extension-$libraryName-$filename";
   }
 
-  protected function setBundleMapping($mapping) {
-    $this->state->set('webpack_bundle_mapping', $mapping);
+  /**
+   * Returns the path to the build output directory.
+   *
+   * @param bool $createIfNeeded
+   *
+   * @return string
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   */
+  protected function getOutputDir($createIfNeeded = FALSE) {
+    $outputDir = $this->configFactory->get('webpack.settings')->get('output_path');
+    if ($createIfNeeded && !file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
+      throw new WebpackDrushOutputDirNotWritableException();
+    }
+    return $outputDir;
   }
 
+  /**
+   * Returns the bundle mapping storage, it can be either state or config.
+   *
+   * The former happens when the output dir is located somewhere in the public
+   * files folder. In this case it is assumed that the build happens at deploy
+   * time and the mapping is saved to the State not to clutter the config space.
+   *
+   * When the directory is set to any other place, commit-time compilation
+   * is assumed. In this case there is little chance that the server will use
+   * the same database and thus the mapping needs to be persistent (saved in
+   * config).
+   *
+   * @return string
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   */
+  protected function getBundleMappingStorage() {
+    if (strpos($this->getOutputDir(), 'public://') !== 0) {
+      // TODO: Some other schemes might be valid too.
+      return 'config';
+    } else {
+      return 'state';
+    }
+  }
+
+  /**
+   * Saves the bundle mapping to state or config, depending on the output dir.
+   *
+   * @see ::getBundleMappingStorage
+   *
+   * @param array $mapping
+   *   The mapping between Drupal js files and the resulting webpack bundles.
+   *
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   */
+  protected function setBundleMapping($mapping) {
+    $storageType = $this->getBundleMappingStorage();
+    if ($storageType === 'config') {
+      $this->configFactory
+        ->getEditable('webpack.build_info')
+        ->set('mapping', $mapping)
+        ->save();
+    } elseif ($storageType === 'state') {
+      $this->state->set('webpack_bundle_mapping', $mapping);
+    }
+  }
+
+  /**
+   * Returns the bundle mapping from the state or config.
+   *
+   * @see ::getBundleMappingStorage
+   *
+   * @return array|null
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
+   */
   protected function getBundleMapping() {
+    $storageType = $this->getBundleMappingStorage();
+    if ($storageType === 'config') {
+      return $this->configFactory->get('webpack.build_info')->get('mapping');
+    }
+
     return $this->state->get('webpack_bundle_mapping');
   }
 

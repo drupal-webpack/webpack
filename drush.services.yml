@@ -1,6 +1,6 @@
 services:
   webpack.commands:
     class: \Drupal\webpack\WebpackDrushCommands
-    arguments: [ '@module_handler', '@theme_handler','@library.discovery', '@state', '@file_system' , '@config.factory']
+    arguments: [ '@module_handler', '@theme_handler','@library.discovery', '@state', '@config.factory', '@file_system' ]
     tags:
     - { name: drush.command }

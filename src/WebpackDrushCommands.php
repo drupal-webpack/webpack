@@ -23,27 +23,22 @@ class WebpackDrushCommands extends DrushCommands {
   protected $fileSystem;
 
   /**
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected $webpackConfig;
-
-  /**
    * WebpackDrushCommands constructor.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery
    * @param \Drupal\Core\State\StateInterface $state
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    */
-  public function __construct(ModuleHandlerInterface $moduleHandler, ThemeHandlerInterface $themeHandler, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, FileSystemInterface $fileSystem, ConfigFactoryInterface $configFactory) {
+  public function __construct(ModuleHandlerInterface $moduleHandler, ThemeHandlerInterface $themeHandler, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, ConfigFactoryInterface $configFactory, FileSystemInterface $fileSystem) {
     $this->moduleHandler = $moduleHandler;
     $this->themeHandler = $themeHandler;
     $this->libraryDiscovery = $libraryDiscovery;
     $this->state = $state;
+    $this->configFactory = $configFactory;
     $this->fileSystem = $fileSystem;
-    $this->webpackConfig = $configFactory->get('webpack.settings');
   }
 
   /**
@@ -110,30 +105,15 @@ class WebpackDrushCommands extends DrushCommands {
    *   Serve the js files.
    *
    * @throws \Drupal\webpack\WebpackDrushConfigWriteException
+   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
    */
   public function serve($options = []) {
     $this->output()->writeln('Hey!');
 
-    $configPath = $this->writeWebpackConfig();
+    $configPath = $this->writeWebpackConfig($this->getWebpackConfig());
 
     $cmd = "yarn --cwd=" . DRUPAL_ROOT . " webpack-serve $configPath";
     system($cmd);
-  }
-
-  /**
-   * Returns the path to the build output directory.
-   *
-   * @param bool $createIfNeeded
-   *
-   * @return string
-   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
-   */
-  protected function getOutputDir($createIfNeeded = FALSE) {
-    $outputDir = $this->webpackConfig->get('output_path');
-    if ($createIfNeeded && !file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
-      throw new WebpackDrushOutputDirNotWritableException();
-    }
-    return $outputDir;
   }
 
   /**
