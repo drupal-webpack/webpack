@@ -11,10 +11,11 @@ interface ConfigProcessorPluginInterface {
    * fields as well as change the existing ones. Processors are executed in
    * the order determined by the weight property, starting with the lowest.
    *
-   * @param array $config
+   * @param array &$config
    *   The webpack config array. All child elements are required to be either
-   *   scalars or associative arrays. Functions can be added as strings, they
-   *   need to start with the 'function' keyword though.
+   *   scalars or associative arrays. Functions, regular expressions and any
+   *   other values that need to be evaluated in javascript need to be enclosed
+   *   with ``.
    * @param array $context
    *   Context in which the config is built. Keys:
    *   - command: 'build' or 'serve'. The drush command that triggered this.

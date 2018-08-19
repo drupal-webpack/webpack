@@ -234,17 +234,20 @@ class WebpackDrushCommands extends DrushCommands {
    * @throws \Drupal\webpack\WebpackDrushConfigWriteException
    */
   protected function writeWebpackConfig($config) {
-    // Functions don't work after json_encode.
-    $functions = $this->mapJsEntities($config, '/^(function|() =>|.*=>).*/');
-    // Neither do regular expression literals. We're looking for regular
-    // expressions with a regular expression, so use @ as a pattern delimiter :)
-    $regexps = $this->mapJsEntities($config, '@^/.*/(a-z)*$@');
-    // Encode and re-add the function bodys.
-    $configString = json_encode($config, JSON_PRETTY_PRINT);
-    $this->decodeJsEntities($configString, $functions);
-    $this->decodeJsEntities($configString, $regexps);
+    $prefix = '';
+    if (isset($config['#lines_before'])) {
+      $prefix = implode("\n", $config['#lines_before']) . "\n";
+      unset($config['#lines_before']);
+    }
 
-    $content = "module.exports = $configString";
+    // The strings provided in backticks should be unquoted.
+    $entities = $this->mapJsEntities($config);
+    // Encode and re-add the function bodys.
+    $configString = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    $this->decodeJsEntities($configString, $entities);
+
+    $content = $prefix . "module.exports = $configString";
+
     $path = file_unmanaged_save_data(
       $content,
       'temporary://webpack.config.js',
@@ -260,35 +263,24 @@ class WebpackDrushCommands extends DrushCommands {
    * with their hashes. Returns the map of replaced items.
    *
    * @param array $input
-   * @param string $pattern
+   *   An associative array to search for the entities in.
    *
    * @return array
    */
-  protected function mapJsEntities(&$input, $pattern) {
+  protected function mapJsEntities(&$input) {
     $mapping = [];
     assert(is_array($input));
     foreach ((array)$input as $key => $value) {
       if (is_array($value) || is_object($value)) {
-        $mapping = array_merge($mapping, $this->mapJsEntities($input[$key], $pattern));
+        $mapping = array_merge($mapping, $this->mapJsEntities($input[$key]));
       }
-      if (is_string($value) && preg_match($pattern, $value)) {
+      if (is_string($value) && preg_match('/^`.*`$/', $value)) {
         $hash = $this->hash($value);
-        $mapping["\"$hash\""] = $value;
+        $mapping["\"$hash\""] = trim($value, '`');
         $input[$key] = $hash;
       }
     }
     return $mapping;
-  }
-
-  /**
-   * Returns a hash of the given value..
-   *
-   * @param string $value
-   *
-   * @return string
-   */
-  protected function hash($value) {
-    return hash('sha256', $value);
   }
 
   /**
@@ -300,6 +292,17 @@ class WebpackDrushCommands extends DrushCommands {
    */
   protected function decodeJsEntities(&$string, $mapping) {
     $string = str_replace(array_keys($mapping), array_values($mapping), $string);
+  }
+
+  /**
+   * Returns a hash of the given value.
+   *
+   * @param string $value
+   *
+   * @return string
+   */
+  protected function hash($value) {
+    return hash('sha256', $value);
   }
 
 }
