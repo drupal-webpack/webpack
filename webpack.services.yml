@@ -1,8 +1,18 @@
 services:
+  webpack.libraries_inspector:
+    class: Drupal\webpack\LibrariesInspector
+    arguments: [ '@module_handler', '@theme_handler','@library.discovery']
+  webpack.config_builder:
+    class: Drupal\webpack\WebpackConfigBuilder
+    arguments: [ '@webpack.libraries_inspector', '@file_system', '@config.factory', '@logger.channel.webpack', '@module_handler']
+  webpack.bundler:
+    class: Drupal\webpack\Bundler
+    arguments: [ '@webpack.config_builder', '@state', '@config.factory', '@file_system']
+
   asset.resolver.webpack:
     class: Drupal\webpack\Asset\DecoratedAssetResolver
     decorates: asset.resolver
-    arguments: [ '@asset.resolver.webpack.inner', '@library.discovery', '@state', '@logger.channel.webpack', '@config.factory']
+    arguments: [ '@asset.resolver.webpack.inner', '@webpack.libraries_inspector', '@webpack.bundler', '@state', '@logger.channel.webpack', '@config.factory']
 
   logger.channel.webpack:
     parent: logger.channel_base

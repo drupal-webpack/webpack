@@ -4,9 +4,9 @@ namespace Drupal\webpack\Asset;
 
 use Drupal\Core\Asset\AssetResolverInterface;
 use Drupal\Core\Asset\AttachedAssetsInterface;
-use Drupal\Core\Asset\LibraryDiscoveryInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\webpack\BundlerInterface;
+use Drupal\webpack\LibrariesInspectorInterface;
 use Drupal\webpack\WebpackLibrariesTrait;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
@@ -21,6 +21,21 @@ class DecoratedAssetResolver implements AssetResolverInterface {
   protected $assetResolver;
 
   /**
+   * @var \Drupal\webpack\LibrariesInspectorInterface
+   */
+  protected $librariesInspector;
+
+  /**
+   * @var \Drupal\webpack\BundlerInterface
+   */
+  protected $bundler;
+
+  /**
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
@@ -29,17 +44,17 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    * DecoratedAssetResolver constructor.
    *
    * @param \Drupal\Core\Asset\AssetResolverInterface $assetResolver
-   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery
+   * @param \Drupal\webpack\LibrariesInspectorInterface $librariesInspector
+   * @param \Drupal\webpack\BundlerInterface $bundler
    * @param \Drupal\Core\State\StateInterface $state
    * @param \Psr\Log\LoggerInterface $logger
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    */
-  public function __construct(AssetResolverInterface $assetResolver, LibraryDiscoveryInterface $libraryDiscovery, StateInterface $state, LoggerInterface $logger, ConfigFactoryInterface $configFactory) {
+  public function __construct(AssetResolverInterface $assetResolver, LibrariesInspectorInterface $librariesInspector, BundlerInterface $bundler, StateInterface $state, LoggerInterface $logger) {
     $this->assetResolver = $assetResolver;
-    $this->libraryDiscovery = $libraryDiscovery;
+    $this->librariesInspector = $librariesInspector;
+    $this->bundler = $bundler;
     $this->state = $state;
     $this->logger = $logger;
-    $this->configFactory = $configFactory;
   }
 
   /**
@@ -51,13 +66,10 @@ class DecoratedAssetResolver implements AssetResolverInterface {
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\webpack\Asset\WebpackAssetUnsupportedTypeException
-   * @throws \Drupal\webpack\WebpackDrushOutputDirNotWritableException
    */
   public function getJsAssets(AttachedAssetsInterface $assets, $optimize) {
     $devMode = $this->devServerEnabled();
-    $bundleMapping = $this->getBundleMapping();
+    $bundleMapping = $this->bundler->getBundleMapping();
     $result = $this->assetResolver->getJsAssets($assets, $optimize);
 
     if (!$devMode && !$bundleMapping) {
@@ -74,8 +86,8 @@ class DecoratedAssetResolver implements AssetResolverInterface {
     $libraries = $this->getLibrariesToLoad($assets);
     foreach ($libraries as $key => $libraryName) {
       list($extension, $name) = explode('/', $libraryName, 2);
-      $library = $this->libraryDiscovery->getLibraryByName($extension, $name);
-      if (!$this->isWebpackLib($library)) {
+      $library = $this->librariesInspector->getLibraryByName($extension, $name);
+      if (!$this->librariesInspector->isWebpackLib($library)) {
         continue;
       }
 
@@ -86,18 +98,21 @@ class DecoratedAssetResolver implements AssetResolverInterface {
     }
     $assets->setLibraries($libraries);
 
-    // TODO: Make this configurable. See ::devServerEnabled.
-    $serveUrl = 'http://localhost:8080';
+    $port = $this->bundler->getServePort();
+    $serveUrl = "http://localhost:$port";
 
     foreach (['header', 'footer'] as $scopeKey => $scope) {
       foreach ($webpackLibs[$scope] as $libraryId => $library) {
         foreach ($library['js'] as $jsAssetInfo) {
           if ($jsAssetInfo['type'] != 'file') {
             // Other types of assets will be ignored.
-            throw new WebpackAssetUnsupportedTypeException();
+            $this->logger->warning(
+              'Only file assets are supported. Got @type.',
+              ['@type' => $jsAssetInfo['type']]
+            );
           }
           $path = $jsAssetInfo['data'];
-          $fileId = $this->getJsFileId($libraryId, $path);
+          $fileId = $this->librariesInspector->getJsFileId($libraryId, $path);
           if ($devMode) {
             // TODO: Get the files to include from the output of webpack:serve
             //       after finding a way to tap into its output.
@@ -118,14 +133,20 @@ class DecoratedAssetResolver implements AssetResolverInterface {
           } else {
             if (!isset($bundleMapping[$fileId])) {
               // Did you forget to run `drush webpack:build`?
-              $this->logger->error('Missing bundle mapping for @fileId. Run `drush webpack:build` to fix.', ['@fileId' => $fileId]);
+              $this->logger->error(
+                'Missing bundle mapping for @fileId. Run `drush webpack:build` to fix.',
+                ['@fileId' => $fileId]
+              );
               continue;
             }
             foreach ($bundleMapping[$fileId] as $bundleFilePath) {
               if (!file_exists($bundleFilePath)) {
                 // File had been built but it was removed from the filesystem
                 // afterwards.
-                $this->logger->error('@bundleFilePath not found. Run `drush webpack:build` to fix.', ['$@bundleFilePath' => $bundleFilePath]);
+                $this->logger->error(
+                  '@bundleFilePath not found. Run `drush webpack:build` to fix.',
+                  ['$@bundleFilePath' => $bundleFilePath]
+                );
                 continue;
               }
               $result[$scopeKey][$path] = [
@@ -176,8 +197,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    * @return bool
    */
   protected function devServerEnabled() {
-    // TODO: Make the dev server port configurable.
-    $connection = @fsockopen('localhost', '8080');
+    $connection = @fsockopen('localhost', $this->bundler->getServePort());
 
     if (is_resource($connection)) {
       fclose($connection);
@@ -188,9 +208,3 @@ class DecoratedAssetResolver implements AssetResolverInterface {
   }
 
 }
-
-class WebpackAssetUnsupportedTypeException extends \Exception {}
-
-class WebpackAssetBundleMappingNotFoundException extends \Exception {}
-
-class WebpackAssetBundleFileMissingException extends \Exception {}
