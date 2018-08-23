@@ -1,18 +1,26 @@
-<h2>Webpack</h2>
-
 Integrates Drupal with <a href="https://webpack.js.org/" target="_blank">Webpack</a>.
 
 <h3>What it does?</h3>
 
-The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers (see <a href="https://drupal.org/project/webpack_babel" target="_blank">Webpack Babel</a>).
+The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers.
+
+<h3>Related modules</h3>
+<ul>
+  <li><a href="https://drupal.org/project/webpack_babel" target="_blank">Webpack Babel</a></li>
+  <li><a href="https://drupal.org/project/webpack_vuejs" target="_blank">Webpack Vue.js</a></li>
+  <li><a href="https://drupal.org/project/webpack_react" target="_blank">Webpack React</a></li>
+</ul>
 
 <h3>Dependencies</h3>
 
-Right now the module assumes that <code>yarn</code> is installed and available in the PATH.
+<ul>
+  <li>drush 9</li>
+  <li><code>yarn</code> installed and available in the PATH</li>
+</ul>
 
 <h3>Setup</h3>
 
-Your project needs to have a <code>package.json</code> file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide <code>composer.json</code>. Placing the file inside the webroot would work too. If you don't have such a file, fear not. <code>yarn init -yp</code> will generate an empty one.
+Your project needs to have a <code>package.json</code> file somewhere up the directory tree. In drupal-composer projects, it is a common practice to place one next to the webroot and the project-wide <code>composer.json</code>. Placing the file inside the webroot would work too. If you don't have such a file, <code>yarn init -yp</code> will generate an empty one.
 
 Once you've got <code>package.json</code>, add the following npm dependencies.
 <code>yarn add webpack</code>
@@ -22,9 +30,9 @@ Once you've got <code>package.json</code>, add the following npm dependencies.
 
 Add <code>webpack: true</code> to your library definition in <code>module_name.libraries.yml</code>.
 
-For local development, start the dev server with <code>yarn webpack:serve</code> and reload the page. The module will detect it and inject the development version (with live reload).
+For local development, start the dev server with <code>drush webpack:serve</code> and reload the page. The module will detect it and inject the development version (with live reload).
 
-On the server, add <code>yarn webpack:build</code> to your after-deploy steps. The bundles will be written to <code>public://webpack</code> and included automatically.
+On the server, add <code>drush webpack:build</code> to your after-deploy steps. The bundles will be written to <code>public://webpack</code> and included automatically.
 
 The output directory can be changed at <code>/admin/config/webpack/settings</code> e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building (<a href="https://github.com/drupal-webpack/webpack/blob/ea88591007c0444a8e6d95c02161bebbebcd41b0/src/WebpackLibrariesTrait.php#L81" target="_blank">details</a>).
 

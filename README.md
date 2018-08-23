@@ -8,11 +8,12 @@ The module allows developers to have their Drupal libraries bundled by webpack. 
 
 ## Dependencies
 
-Right now the module assumes that `yarn` is installed and available in the PATH.
+- `drush 9`
+- `yarn`
 
 ## Setup
 
-Your project needs to have a `package.json` file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide `composer.json`. Placing the file inside the webroot would work too. If you don't have such a file, fear not. `yarn init -yp` will generate an empty one.
+Your project needs to have a `package.json` file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide `composer.json`. Placing the file inside the webroot would work too. If you don't have such a file `yarn init -yp` will generate an empty one.
 
 Once you've got `package.json`, add the following npm dependencies.
 `yarn add webpack` 
@@ -22,9 +23,9 @@ Once you've got `package.json`, add the following npm dependencies.
 
 Add `webpack: true` to your library definition in `module_name.libraries.yml`.
 
-For local development, start the dev server with `yarn webpack:serve` and reload the page. The module will detect it and inject the development version (with live reload).
+For local development, start the dev server with `drush webpack:serve` and reload the page. The module will detect it and inject the development version (with live reload).
 
-On the server, add `yarn webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
+On the server, add `drush webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
 
 The output directory can be changed at `/admin/config/webpack/settings` e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building ([details](https://github.com/drupal-webpack/webpack/blob/ea88591007c0444a8e6d95c02161bebbebcd41b0/src/WebpackLibrariesTrait.php#L81)).
 
