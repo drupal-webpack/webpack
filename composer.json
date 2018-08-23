@@ -11,7 +11,8 @@
     "source": "http://cgit.drupalcode.org/webpack"
   },
   "require": {
-    "ext-json": "*"
+    "ext-json": "*",
+    "drush/drush": "^9"
   },
   "autoload": {
     "psr-4": {
