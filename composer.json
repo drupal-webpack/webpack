@@ -11,6 +11,7 @@
     "source": "http://cgit.drupalcode.org/webpack"
   },
   "require": {
+    "php" : "^5.6 || ^7.0",
     "ext-json": "*",
     "drush/drush": "^9"
   },
