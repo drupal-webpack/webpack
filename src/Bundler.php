@@ -11,8 +11,6 @@ use Drupal\Core\State\StateInterface;
 
 class Bundler implements BundlerInterface {
 
-  use WebpackLibrariesTrait;
-
   /**
    * @var \Drupal\webpack\WebpackConfigBuilderInterface
    */

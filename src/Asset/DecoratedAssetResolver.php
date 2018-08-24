@@ -7,13 +7,10 @@ use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\webpack\BundlerInterface;
 use Drupal\webpack\LibrariesInspectorInterface;
-use Drupal\webpack\WebpackLibrariesTrait;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 
 class DecoratedAssetResolver implements AssetResolverInterface {
-
-  use WebpackLibrariesTrait;
 
   /**
    * @var AssetResolverInterface

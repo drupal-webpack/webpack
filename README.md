@@ -27,7 +27,7 @@ For local development, start the dev server with `drush webpack:serve` and reloa
 
 On the server, add `drush webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
 
-The output directory can be changed at `/admin/config/webpack/settings` e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building ([details](https://github.com/drupal-webpack/webpack/blob/ea88591007c0444a8e6d95c02161bebbebcd41b0/src/WebpackLibrariesTrait.php#L81)).
+The output directory can be changed at `/admin/config/webpack/settings` e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building ([details](https://github.com/drupal-webpack/webpack/blob/e498e8b2ce8b986fe91b280af7b3797bdfa6f41b/src/Bundler.php#L133)).
 
 ## How it works?
 
