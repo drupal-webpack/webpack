@@ -2,10 +2,7 @@
 
 namespace Drupal\webpack;
 
-use Drupal\Core\Asset\LibraryDiscoveryInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\State\StateInterface;
 
@@ -125,7 +122,7 @@ class Bundler implements BundlerInterface {
    * {@inheritdoc}
    */
   public function getServePort() {
-    return $this->state->get('webpack_serve_port', '8080');
+    return $this->state->get('webpack_serve_port', NULL);
   }
 
   /**

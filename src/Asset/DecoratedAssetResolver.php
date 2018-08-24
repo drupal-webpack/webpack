@@ -65,11 +65,11 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    * {@inheritdoc}
    */
   public function getJsAssets(AttachedAssetsInterface $assets, $optimize) {
-    $devMode = $this->devServerEnabled();
+    $devUrl = $this->getDevServerUrl();
     $bundleMapping = $this->bundler->getBundleMapping();
     $result = $this->assetResolver->getJsAssets($assets, $optimize);
 
-    if (!$devMode && !$bundleMapping) {
+    if (!$devUrl && !$bundleMapping) {
       // We're in prod mode and there's no mapping of library files. Return the
       // result of the core resolver.
       return $result;
@@ -95,9 +95,6 @@ class DecoratedAssetResolver implements AssetResolverInterface {
     }
     $assets->setLibraries($libraries);
 
-    $port = $this->bundler->getServePort();
-    $serveUrl = "http://localhost:$port";
-
     foreach (['header', 'footer'] as $scopeKey => $scope) {
       foreach ($webpackLibs[$scope] as $libraryId => $library) {
         foreach ($library['js'] as $jsAssetInfo) {
@@ -110,7 +107,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
           }
           $path = $jsAssetInfo['data'];
           $fileId = $this->librariesInspector->getJsFileId($libraryId, $path);
-          if ($devMode) {
+          if ($devUrl) {
             // TODO: Get the files to include from the output of webpack:serve
             //       after finding a way to tap into its output.
             $bundleName = "$fileId.bundle.js";
@@ -125,7 +122,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
               'browsers' => [],
               'scope' => $scope,
               'minified' => TRUE,
-              'data' => "$serveUrl/$bundleName",
+              'data' => "$devUrl/$bundleName",
             ];
           } else {
             if (!isset($bundleMapping[$fileId])) {
@@ -193,12 +190,16 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    *
    * @return bool
    */
-  protected function devServerEnabled() {
-    $connection = @fsockopen('localhost', $this->bundler->getServePort());
+  protected function getDevServerUrl() {
+    $port = $this->bundler->getServePort();
+    if (!$port) {
+      return false;
+    }
+    $connection = @fsockopen('localhost', $port);
 
     if (is_resource($connection)) {
       fclose($connection);
-      return true;
+      return "http://localhost:$port";
     }
 
     return false;
