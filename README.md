@@ -23,7 +23,7 @@ Once you've got `package.json`, add the following npm dependencies.
 
 Add `webpack: true` to your library definition in `module_name.libraries.yml`.
 
-For local development, start the dev server with `drush webpack:serve` and reload the page. The module will detect it and inject the development version (with live reload).
+For local development, start the dev server with `drush webpack:serve --port 1234` and reload the page. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
 
 On the server, add `drush webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
 
