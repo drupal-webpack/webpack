@@ -3,6 +3,7 @@
 namespace Drupal\Tests\webpack\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\npm\Exception\NpmCommandFailedException;
 
 abstract class WebpackTestBase extends KernelTestBase {
 
@@ -45,7 +46,12 @@ abstract class WebpackTestBase extends KernelTestBase {
 
     $this->npmExecutable->initPackageJson(DRUPAL_ROOT);
 
-    $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve']);
+    try {
+      $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve']);
+    } catch (NpmCommandFailedException $e) {
+      print $e->getProcess()->getOutput();
+      print $e->getProcess()->getErrorOutput();
+    }
 
     // TODO: Create package.json and install dependencies.
   }
