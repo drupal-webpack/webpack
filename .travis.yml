@@ -75,7 +75,6 @@ install:
 
 # Add the github repositories for webpack and npm.
 - composer --working-dir=$DRUPAL_BUILD_DIR config repositories.webpack vcs https://github.com/drupal-webpack/webpack
-- composer --working-dir=$DRUPAL_BUILD_DIR config repositories.npm vcs https://github.com/drupal-webpack/npm
 
 # Depending on the type of the build (branch vs PR) the TRAVIS_BRANCH hold different values (???)
 # @see https://graysonkoonce.com/getting-the-current-branch-name-during-a-pull-request-in-travis-ci/
@@ -84,17 +83,17 @@ install:
 # Require the webpack module and symfony process. The latter is a dependency of npm and
 # composer doesn't do recursive resolution for packages fetched from custom repositories.
 # @see https://getcomposer.org/doc/faqs/why-can%27t-composer-load-repositories-recursively.md
-- composer --working-dir=$DRUPAL_BUILD_DIR require symfony/process:3.4.x-dev drupal/webpack:dev-$BRANCH#$TRAVIS_COMMIT
+- composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-$BRANCH#$TRAVIS_COMMIT
 
+# Show all these for debugging purposes.
 - echo $TRAVIS_BRANCH
 - echo $BRANCH
 - echo $TRAVIS_COMMIT
-- echo dev-$TRAVIS_BRANCH#$TRAVIS_COMMIT
-- echo "dev-$TRAVIS_BRANCH#$TRAVIS_COMMIT"
+- echo dev-$BRANCH#$TRAVIS_COMMIT
 - ls $DRUPAL_BUILD_DIR/modules
 - ls $DRUPAL_BUILD_DIR/modules/contrib
 - ls $DRUPAL_BUILD_DIR/modules/contrib/webpack
-- ls $DRUPAL_BUILD_DIR/..
+- ls $DRUPAL_BUILD_DIR/modules/contrib/npm
 - cat $DRUPAL_BUILD_DIR/composer.json
 
 # Copy the customized phpunit configuration file to the core directory so
