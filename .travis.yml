@@ -81,5 +81,9 @@ install:
 # require also triggers a full 'composer install'.
 - composer --working-dir=$DRUPAL_BUILD_DIR require drush/drush:^9
 
+# Add the github repository to composer and require the module this way to test that too.
+- composer --working-dir=$DRUPAL_BUILD_DIR config repositories.repo-name vcs https://github.com/drupal-webpack/webpack
+- composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-8.x-1.x#$TRAVIS_COMMIT
+
 script:
 - $DRUPAL_BUILD_DIR/vendor/bin/phpunit --configuration $DRUPAL_BUILD_DIR/core/phpunit.xml $TRAVIS_BUILD_DIR;
