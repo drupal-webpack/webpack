@@ -82,6 +82,7 @@ install:
 - composer --working-dir=$DRUPAL_BUILD_DIR require drush/drush:^9
 
 # Add the github repository to composer and require the module this way to test that too.
+- composer config --global github-oauth.github.com "$GITHUB_TOKEN"
 - composer --working-dir=$DRUPAL_BUILD_DIR config repositories.repo-name vcs https://github.com/drupal-webpack/webpack
 - composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-8.x-1.x#$TRAVIS_COMMIT
 
