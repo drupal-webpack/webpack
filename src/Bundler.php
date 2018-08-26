@@ -112,7 +112,7 @@ class Bundler implements BundlerInterface {
   public function getBundleMapping() {
     $storageType = $this->getBundleMappingStorage();
     if ($storageType === 'config') {
-      return $this->configFactory->get('webpack.build_info')->get('mapping');
+      return $this->configFactory->get('webpack.build_metadata')->get('bundle_mapping');
     }
 
     return $this->state->get('webpack_bundle_mapping');
@@ -160,8 +160,8 @@ class Bundler implements BundlerInterface {
     $storageType = $this->getBundleMappingStorage();
     if ($storageType === 'config') {
       $this->configFactory
-        ->getEditable('webpack.build_info')
-        ->set('mapping', $mapping)
+        ->getEditable('webpack.build_metadata')
+        ->set('bundle_mapping', $mapping)
         ->save();
     } elseif ($storageType === 'state') {
       $this->state->set('webpack_bundle_mapping', $mapping);
