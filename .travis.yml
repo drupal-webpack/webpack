@@ -63,6 +63,9 @@ before_install:
 # Update composer.
 - composer self-update
 
+# Add the github API key to composer.
+- composer config --global github-oauth.github.com "$GITHUB_TOKEN"
+
 install:
 # Create the database.
 - mysql -e 'create database webpack'
@@ -70,12 +73,7 @@ install:
 # Download Drupal 8 core from the Github mirror because it is faster.
 - git clone --branch $DRUPAL_CORE --depth 1 https://github.com/drupal/drupal.git $DRUPAL_BUILD_DIR
 
-# Bring in the module dependencies without requiring a merge plugin. The
-# require also triggers a full 'composer install'.
-- composer --working-dir=$DRUPAL_BUILD_DIR require drush/drush:^9
-
-# Add the github repository to composer and require the module this way to test that too.
-- composer config --global github-oauth.github.com "$GITHUB_TOKEN"
+# Add the github repository to composer and require the module.
 - composer --working-dir=$DRUPAL_BUILD_DIR config repositories.repo-name vcs https://github.com/drupal-webpack/webpack
 - composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-8.x-1.x#$TRAVIS_COMMIT
 
