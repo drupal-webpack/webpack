@@ -8,6 +8,7 @@ The module allows developers to have their Drupal libraries bundled by webpack. 
 
 ## Dependencies
 
+- [NPM](https://drupal.org/project/npm)
 - `drush 9`
 - `yarn`
 
