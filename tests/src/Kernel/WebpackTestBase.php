@@ -6,7 +6,12 @@ use Drupal\KernelTests\KernelTestBase;
 
 abstract class WebpackTestBase extends KernelTestBase {
 
-  protected static $modules = [ 'system', 'webpack', 'webpack_test_libs' ];
+  protected static $modules = ['npm', 'system', 'webpack', 'webpack_test_libs'];
+
+  /**
+   * @var \Drupal\npm\Plugin\NpmExecutableInterface
+   */
+  protected $npmExecutable;
 
   /**
    * @var \Drupal\webpack\LibrariesInspectorInterface
@@ -29,11 +34,18 @@ abstract class WebpackTestBase extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
 
+    $this->npmExecutable = $this->container->get('plugin.manager.npm_executable')->getExecutable();
     $this->librariesInspector = $this->container->get('webpack.libraries_inspector');
     $this->webpackConfigBuilder= $this->container->get('webpack.config_builder');
     $this->bundler = $this->container->get('webpack.bundler');
 
+    $this->installConfig('webpack');
+    $this->installConfig('webpack_test_libs');
     $this->installConfig('system');
+
+    $this->npmExecutable->initPackageJson(DRUPAL_ROOT . '/../');
+
+    // TODO: Create package.json and install dependencies.
   }
 
 }

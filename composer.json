@@ -13,7 +13,8 @@
   "require": {
     "php" : "^5.6 || ^7.0",
     "ext-json": "*",
-    "drush/drush": "^9"
+    "drush/drush": "^9",
+    "drupal/npm": "*"
   },
   "autoload": {
     "psr-4": {
