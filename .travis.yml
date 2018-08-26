@@ -70,16 +70,6 @@ install:
 # Download Drupal 8 core from the Github mirror because it is faster.
 - git clone --branch $DRUPAL_CORE --depth 1 https://github.com/drupal/drupal.git $DRUPAL_BUILD_DIR
 
-# Reference the module in the build site.
-- ls $DRUPAL_BUILD_DIR/modules
-- ls $DRUPAL_BUILD_DIR/modules/contrib
-- ls $DRUPAL_BUILD_DIR/..
-- cat $DRUPAL_BUILD_DIR/composer.json
-
-# Copy the customized phpunit configuration file to the core directory so
-# the relative paths are correct.
-- cp $DRUPAL_BUILD_DIR/modules/contrib/webpack/phpunit.xml.dist $DRUPAL_BUILD_DIR/core/phpunit.xml
-
 # Bring in the module dependencies without requiring a merge plugin. The
 # require also triggers a full 'composer install'.
 - composer --working-dir=$DRUPAL_BUILD_DIR require drush/drush:^9
@@ -88,6 +78,15 @@ install:
 - composer config --global github-oauth.github.com "$GITHUB_TOKEN"
 - composer --working-dir=$DRUPAL_BUILD_DIR config repositories.repo-name vcs https://github.com/drupal-webpack/webpack
 - composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-8.x-1.x#$TRAVIS_COMMIT
+
+- ls $DRUPAL_BUILD_DIR/modules
+- ls $DRUPAL_BUILD_DIR/modules/contrib
+- ls $DRUPAL_BUILD_DIR/..
+- cat $DRUPAL_BUILD_DIR/composer.json
+
+# Copy the customized phpunit configuration file to the core directory so
+# the relative paths are correct.
+- cp $DRUPAL_BUILD_DIR/modules/contrib/webpack/phpunit.xml.dist $DRUPAL_BUILD_DIR/core/phpunit.xml
 
 script:
 - $DRUPAL_BUILD_DIR/vendor/bin/phpunit --configuration $DRUPAL_BUILD_DIR/core/phpunit.xml $TRAVIS_BUILD_DIR;
