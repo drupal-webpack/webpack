@@ -85,10 +85,14 @@ install:
 # @see https://getcomposer.org/doc/faqs/why-can%27t-composer-load-repositories-recursively.md
 - composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-$BRANCH
 
+# For some reason, only in travis, the dependencies are downloaded but the module itself is not.
+- rm -rf $DRUPAL_BUILD_DIR/modules/contrib/webpack
+- ln -s $TRAVIS_BUILD_DIR $DRUPAL_BUILD_DIR/modules/contrib/webpack
+
 # Show all these for debugging purposes.
 - echo $TRAVIS_BRANCH
 - echo $BRANCH
-- echo dev-$BRANCH#$TRAVIS_COMMIT
+- echo dev-$BRANCH
 - ls $DRUPAL_BUILD_DIR/modules
 - ls $DRUPAL_BUILD_DIR/modules/contrib
 - ls $DRUPAL_BUILD_DIR/modules/contrib/webpack
