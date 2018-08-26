@@ -49,8 +49,7 @@ abstract class WebpackTestBase extends KernelTestBase {
     try {
       $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve']);
     } catch (NpmCommandFailedException $e) {
-      print $e->getProcess()->getOutput();
-      print $e->getProcess()->getErrorOutput();
+      throw new \Exception($e->getProcess()->getOutput());
     }
 
     // TODO: Create package.json and install dependencies.
