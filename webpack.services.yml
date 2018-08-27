@@ -7,7 +7,7 @@ services:
     arguments: [ '@webpack.libraries_inspector', '@file_system', '@config.factory', '@logger.channel.webpack', '@module_handler']
   webpack.bundler:
     class: Drupal\webpack\Bundler
-    arguments: [ '@webpack.config_builder', '@state', '@config.factory', '@file_system']
+    arguments: [ '@webpack.config_builder', '@state', '@config.factory', '@file_system', '@plugin.manager.npm_executable']
 
   asset.resolver.webpack:
     class: Drupal\webpack\Asset\DecoratedAssetResolver

@@ -5,6 +5,8 @@ namespace Drupal\webpack;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\npm\Plugin\NpmExecutableInterface;
+use Drupal\npm\Plugin\NpmExecutablePluginManager;
 
 class Bundler implements BundlerInterface {
 
@@ -29,18 +31,27 @@ class Bundler implements BundlerInterface {
   protected $fileSystem;
 
   /**
+   * @var \Drupal\npm\Plugin\NpmExecutableInterface
+   */
+  protected $npmExecutable;
+
+  /**
    * WebpackDrushCommands constructor.
    *
    * @param \Drupal\webpack\WebpackConfigBuilderInterface $webpackConfigBuilder
    * @param \Drupal\Core\State\StateInterface $state
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   * @param \Drupal\npm\Plugin\NpmExecutablePluginManager $npmExecutablePluginManager
+   *
+   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
    */
-  public function __construct(WebpackConfigBuilderInterface $webpackConfigBuilder, StateInterface $state, ConfigFactoryInterface $configFactory, FileSystemInterface $fileSystem) {
+  public function __construct(WebpackConfigBuilderInterface $webpackConfigBuilder, StateInterface $state, ConfigFactoryInterface $configFactory, FileSystemInterface $fileSystem, NpmExecutablePluginManager $npmExecutablePluginManager) {
     $this->webpackConfigBuilder = $webpackConfigBuilder;
     $this->state = $state;
     $this->configFactory = $configFactory;
     $this->fileSystem = $fileSystem;
+    $this->npmExecutable = $npmExecutablePluginManager->getExecutable();
   }
 
   /**
@@ -54,35 +65,27 @@ class Bundler implements BundlerInterface {
     $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'build']);
     $configPath = $this->webpackConfigBuilder->writeWebpackConfig($config);
 
-    $cmd = "yarn --cwd=" . DRUPAL_ROOT . " webpack --config $configPath";
-    exec($cmd, $output, $exitCode);
+    $process = $this->npmExecutable->runScript(['webpack', '--config', $configPath]);
 
-    if ($exitCode !== 0) {
-      return [FALSE, $output, []];
-    }
-
-    foreach ($output as $line) {
-      $matches = [];
-      if (preg_match('/^Entrypoint (.*) = (.*)/', $line, $matches)) {
-        list(, $entryPoint, $files) = $matches;
-        foreach (explode(' ', $files) as $fileName) {
+    $entryPointLines = [];
+    if (preg_match_all('/Entrypoint (.*) = (.*)/', $process->getOutput(), $matches)) {
+      list($lines, $entryPoints, $files) = $matches;
+      foreach ($entryPoints as $key => $entryPoint) {
+        $entryPointLines[] = $lines[$key];
+        foreach (explode(' ', $files[$key]) as $fileName) {
           $mapping[$entryPoint][] = "$outputDir/$fileName";
         }
       }
     }
 
     if (empty($mapping)) {
-      return [FALSE, $output, ['No files were written']];
+      return [FALSE, $process, ['No files were written']];
     }
 
     $this->setBundleMapping($mapping);
 
     $messages = ["Files written to '$outputDir':"];
-    foreach ($output as $line) {
-      if (strpos($line, 'Entrypoint ') === 0) {
-        $messages[] = $line;
-      }
-    }
+    $messages = array_merge($messages, $entryPointLines);
 
     if ($this->getBundleMappingStorage() === 'config') {
       $messages[] = '';

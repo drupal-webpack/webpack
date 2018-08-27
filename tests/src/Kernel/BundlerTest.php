@@ -15,13 +15,15 @@ class BundlerTest extends WebpackTestBase {
 
   public function testBuild() {
     self::assertEmpty($this->bundler->getBundleMapping(), 'Bundle mapping is empty initially.');
-    try {
-      $this->bundler->build();
-    } catch (NpmCommandFailedException $e) {
-      throw new \Exception($e->getProcess()->getOutput());
+    list(, , $messages) = $this->bundler->build();
+
+    $bundleMapping = $this->bundler->getBundleMapping();
+    self::assertEquals(3, count($bundleMapping), '3 js files built.');
+
+    $messages = implode("\n", $messages);
+    foreach ($bundleMapping as $entryPoint => $files) {
+      $this->assertRegExp("/Entrypoint $entryPoint/", $messages, 'Expected entrypoint found in the messages.');
     }
-    $mapping = $this->bundler->getBundleMapping();
-    self::assertEquals(3, count($mapping), '3 js files built.');
   }
 
 }
