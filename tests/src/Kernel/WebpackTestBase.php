@@ -44,7 +44,7 @@ abstract class WebpackTestBase extends KernelTestBase {
     $this->installConfig('webpack_test_libs');
     $this->installConfig('system');
 
-    $this->npmExecutable->initPackageJson(DRUPAL_ROOT);
+    $this->npmExecutable->initPackageJson();
 
     $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve']);
 
