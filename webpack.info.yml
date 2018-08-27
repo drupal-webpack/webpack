@@ -6,3 +6,7 @@ configure: webpack.webpack_settings_form
 package: 'Javascript'
 dependencies:
   - npm:npm
+npm_dependencies:
+  - webpack
+  - webpack-cli
+  - webpack-serve
