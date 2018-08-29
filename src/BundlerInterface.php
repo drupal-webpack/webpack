@@ -9,8 +9,10 @@ interface BundlerInterface {
    *
    * @return array
    *   An array with two items: 0: success and 1: output of the command
+   *
    * @throws \Drupal\webpack\WebpackConfigNotValidException
    * @throws \Drupal\webpack\WebpackConfigWriteException
+   * @throws \Drupal\npm\Exception\NpmCommandFailedException
    */
   public function build();
 
@@ -18,8 +20,8 @@ interface BundlerInterface {
    * Start the dev server.
    *
    * @param $port
-   *
    * @return mixed
+   *
    * @throws \Drupal\webpack\WebpackConfigNotValidException
    * @throws \Drupal\webpack\WebpackConfigWriteException
    */

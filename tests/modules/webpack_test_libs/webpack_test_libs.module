@@ -16,7 +16,14 @@ function webpack_test_libs_page_attachments(array &$attachments) {
  * @throws \Exception
  */
 function webpack_test_libs_webpack_config_alter(&$config) {
-  if (!isset($config['output'])) {
+  if (!isset($config['output']) || empty($config['output'])) {
     throw new \Exception('Output not found in webpack config.');
   }
+}
+
+/**
+ * Implements hook_npm_working_dir_alter().
+ */
+function webpack_test_libs_npm_working_dir_alter(&$cwd) {
+  $cwd = DRUPAL_ROOT;
 }

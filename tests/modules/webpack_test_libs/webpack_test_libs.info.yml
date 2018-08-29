@@ -5,3 +5,6 @@ core: 8.x
 package: 'Javascript'
 dependencies:
   - webpack
+npm_dependencies:
+  - ramda
+  - apollo-boost
