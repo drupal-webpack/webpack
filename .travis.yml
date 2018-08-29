@@ -93,6 +93,8 @@ install:
 - echo $TRAVIS_BRANCH
 - echo $BRANCH
 - echo dev-$BRANCH
+- ls $DRUPAL_BUILD_DIR/..
+- ls $DRUPAL_BUILD_DIR
 - ls $DRUPAL_BUILD_DIR/modules
 - ls $DRUPAL_BUILD_DIR/modules/contrib
 - ls $DRUPAL_BUILD_DIR/modules/contrib/webpack
