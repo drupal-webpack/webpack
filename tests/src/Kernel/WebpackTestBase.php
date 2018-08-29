@@ -47,9 +47,9 @@ abstract class WebpackTestBase extends KernelTestBase {
     $this->npmExecutable->initPackageJson();
 
     // Add webpack dependencies.
-    $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve']);
+    $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve', 'apollo-boost', 'ramda']);
     // And the test libs.
-    $this->npmExecutable->addPackages(['apollo-boost', 'ramda']);
+//    $this->npmExecutable->addPackages(['apollo-boost', 'ramda']);
 
     // TODO: Create package.json and install dependencies.
   }
