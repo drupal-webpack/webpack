@@ -23,7 +23,6 @@ interface WebpackConfigBuilderInterface {
    *   The config to write.
    *
    * @return false|string
-   * @throws \Drupal\webpack\WebpackDrushConfigWriteException
    */
   public function writeWebpackConfig($config);
 

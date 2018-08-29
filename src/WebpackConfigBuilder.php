@@ -57,10 +57,6 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
   public function buildWebpackConfig($context) {
     $config = [
       'mode' => 'development',
-      'output' => [
-        'filename' => '[name].bundle.js',
-        'path' => $this->fileSystem->realpath($this->getOutputDir(TRUE)),
-      ],
       //      'optimization' => [
       //        'splitChunks' => [
       //          'chunks' => 'all',

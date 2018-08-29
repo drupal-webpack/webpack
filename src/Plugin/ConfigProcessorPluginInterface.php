@@ -19,6 +19,8 @@ interface ConfigProcessorPluginInterface {
    * @param array $context
    *   Context in which the config is built. Keys:
    *   - command: 'build' or 'serve'. The drush command that triggered this.
+   *
+   * @throws \Drupal\webpack\WebpackConfigNotValidException
    */
   public function processConfig(&$config, $context);
 
