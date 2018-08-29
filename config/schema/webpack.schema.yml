@@ -1,0 +1,19 @@
+webpack.settings:
+  type: config_object
+  label: 'Webpack settings'
+  mapping:
+    output_path:
+      type: string
+      label: 'Output directory for bundle files.'
+
+webpack.build_metadata:
+  type: config_object
+  label: 'Webpack build variables'
+  mapping:
+    bundle_mapping:
+      type: sequence
+      label: 'Mapping of original files to corresponding bundles.'
+      sequence:
+        type: sequence
+        sequence:
+          type: string
