@@ -48,8 +48,8 @@ abstract class WebpackTestBase extends KernelTestBase {
 //    throw new \Exception($process->getOutput() . $process->getErrorOutput());
 
     // Add webpack dependencies.
-    $process = $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve', 'apollo-boost', 'ramda']);
-    throw new \Exception($process->getOutput() . $process->getErrorOutput());
+    $process = $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve', 'ramda']);
+//    throw new \Exception($process->getOutput() . $process->getErrorOutput());
     // And the test libs.
 //    $this->npmExecutable->addPackages(['apollo-boost', 'ramda']);
 
