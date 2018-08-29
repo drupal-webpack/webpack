@@ -107,5 +107,3 @@ install:
 
 script:
 - $DRUPAL_BUILD_DIR/vendor/bin/phpunit --configuration $DRUPAL_BUILD_DIR/core/phpunit.xml $TRAVIS_BUILD_DIR;
-- cat $DRUPAL_BUILD_DIR/package.json
-- ls $DRUPAL_BUILD_DIR/node_modules

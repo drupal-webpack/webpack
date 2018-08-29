@@ -58,7 +58,6 @@ class Bundler implements BundlerInterface {
    * {@inheritdoc}
    */
   public function build() {
-    $output = [];
     $mapping = [];
     $exitCode = NULL;
     $outputDir = $this->webpackConfigBuilder->getOutputDir();
@@ -92,7 +91,7 @@ class Bundler implements BundlerInterface {
       $messages[] = "WARNING: The output directory is outside of the public files directory. The config needs to be exported in order for the files to be loaded on other environments.";
     }
 
-    return [TRUE, $output, $messages];
+    return [TRUE, $process, $messages];
   }
 
   /**
