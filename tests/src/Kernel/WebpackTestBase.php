@@ -1,0 +1,59 @@
+<?php
+
+namespace Drupal\Tests\webpack\Kernel;
+
+use Drupal\KernelTests\KernelTestBase;
+use Drupal\npm\Exception\NpmCommandFailedException;
+
+abstract class WebpackTestBase extends KernelTestBase {
+
+  protected static $modules = ['npm', 'system', 'webpack', 'webpack_test_libs'];
+
+  /**
+   * @var \Drupal\npm\Plugin\NpmExecutableInterface
+   */
+  protected $npmExecutable;
+
+  /**
+   * @var \Drupal\webpack\LibrariesInspectorInterface
+   */
+  protected $librariesInspector;
+
+  /**
+   * @var \Drupal\webpack\WebpackConfigBuilderInterface
+   */
+  protected $webpackConfigBuilder;
+
+  /**
+   * @var \Drupal\webpack\BundlerInterface
+   */
+  protected $bundler;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->npmExecutable = $this->container->get('plugin.manager.npm_executable')->getExecutable();
+    $this->librariesInspector = $this->container->get('webpack.libraries_inspector');
+    $this->webpackConfigBuilder= $this->container->get('webpack.config_builder');
+    $this->bundler = $this->container->get('webpack.bundler');
+
+    $this->installConfig('webpack');
+    $this->installConfig('webpack_test_libs');
+    $this->installConfig('system');
+
+    $process = $this->npmExecutable->initPackageJson();
+//    throw new \Exception($process->getOutput() . $process->getErrorOutput());
+
+    // Add webpack dependencies.
+    $process = $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve', 'ramda']);
+//    throw new \Exception($process->getOutput() . $process->getErrorOutput());
+    // And the test libs.
+//    $this->npmExecutable->addPackages(['apollo-boost', 'ramda']);
+
+    // TODO: Create package.json and install dependencies.
+  }
+
+}
