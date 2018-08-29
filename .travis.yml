@@ -98,6 +98,8 @@ install:
 - ls $DRUPAL_BUILD_DIR/modules/contrib/webpack
 - ls $DRUPAL_BUILD_DIR/modules/contrib/npm
 - cat $DRUPAL_BUILD_DIR/composer.json
+- cat $DRUPAL_BUILD_DIR/package.json
+- ls $DRUPAL_BUILD_DIR/node_modules
 
 # Copy the customized phpunit configuration file to the core directory so
 # the relative paths are correct.
