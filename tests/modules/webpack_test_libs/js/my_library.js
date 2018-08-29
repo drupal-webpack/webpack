@@ -1,3 +1,3 @@
-import ApolloClient, { gql } from 'apollo-boost';
+import R from 'ramda';
 
-const client = new ApolloClient();
+console.log(R);
