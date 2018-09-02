@@ -9,6 +9,7 @@ use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\npm\Exception\NpmCommandFailedException;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -57,6 +58,8 @@ class WebpackDrushCommands extends DrushCommands {
       $this->output()->writeln($e->getMessage());
     } catch (WebpackConfigWriteException $e) {
       $this->output()->writeln($e->getMessage());
+    } catch (NpmCommandFailedException $e) {
+      $this->output()->writeln("The npm script has failed. Details:\n{$e->getMessage()}");
     } finally {
       $this->output()->writeln($this->t(
         'Build :status',
@@ -77,14 +80,18 @@ class WebpackDrushCommands extends DrushCommands {
    * @usage drush wepback:serve
    *   Serve the js files.
    */
-  public function serve($options = ['port' => '8080']) {
+  public function serve($options = ['port' => '1234']) {
     $this->output()->writeln('Hey! Starting the dev server.');
     try {
-      $this->bundler->serve($options['port']);
+      $this->bundler->serve($options['port'], function ($type, $buffer) {
+        $this->output()->writeln($buffer);
+      });
     } catch (WebpackConfigNotValidException $e) {
       $this->output()->writeln($e->getMessage());
     } catch (WebpackConfigWriteException $e) {
       $this->output()->writeln($e->getMessage());
+    } catch (NpmCommandFailedException $e) {
+      $this->output()->writeln("The npm script has failed. Details:\n{$e->getMessage()}");
     }
   }
 

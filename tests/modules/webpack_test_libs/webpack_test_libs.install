@@ -1,0 +1,11 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function webpack_test_libs_install() {
+  \Drupal::configFactory()
+    ->getEditable('webpack.settings')
+    ->set('output_path', 'sites/default/files')
+    ->save();
+}

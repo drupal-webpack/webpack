@@ -39,20 +39,23 @@ class LibrariesInspector implements LibrariesInspectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAllLibraries() {
-    $libraries = [];
-    $extensions = array_merge(
-      $this->moduleHandler->getModuleList(),
-      $this->themeHandler->listInfo()
-    );
+  public function getEntryPoints() {
+    $entryPoints = [];
+    foreach ($this->getAllLibraries() as $extension => $libraries) {
+      foreach ($libraries as $libraryName => $library) {
+        if (!$this->isWebpackLib($library)) {
+          continue;
+        }
 
-    /** @var \Drupal\Core\Extension\Extension $extension */
-    foreach ($extensions as $extension) {
-      $libraries[$extension->getName()] =
-        $this->libraryDiscovery->getLibrariesByExtension($extension->getName());
+        foreach ($library['js'] as $jsAssetInfo) {
+          $path = $jsAssetInfo['data'];
+          $id = $this->getJsFileId("$extension/$libraryName", $path);
+          $entryPoints[$id] = $path;
+        }
+      }
     }
 
-    return $libraries;
+    return $entryPoints;
   }
 
   /**
@@ -76,6 +79,27 @@ class LibrariesInspector implements LibrariesInspectorInterface {
     $filename = basename($filepath, '.js');
     list($extension, $libraryName) = explode('/', $libraryId);
     return "$extension-$libraryName-$filename";
+  }
+
+  /**
+   * Returns all the libraries defined by enabled modules and themes.
+   *
+   * @return array
+   */
+  protected function getAllLibraries() {
+    $libraries = [];
+    $extensions = array_merge(
+      $this->moduleHandler->getModuleList(),
+      $this->themeHandler->listInfo()
+    );
+
+    /** @var \Drupal\Core\Extension\Extension $extension */
+    foreach ($extensions as $extension) {
+      $libraries[$extension->getName()] =
+        $this->libraryDiscovery->getLibrariesByExtension($extension->getName());
+    }
+
+    return $libraries;
   }
 
 }

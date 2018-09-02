@@ -17,15 +17,24 @@ interface BundlerInterface {
   public function build();
 
   /**
-   * Start the dev server.
+   * Starts the dev server.
    *
-   * @param $port
-   * @return mixed
+   * This method never returns, it can only throw exceptions. $customListener
+   * can be used to parse the output.
+   *
+   * @param int $port
+   *   Local port to start the dev server on. Defaults to 1234.
+   * @param null|callable $customListener
+   *   Callback that will be passed to \Symfony\Process\Process::wait().
+   * @param int|NULL $timeout
+   *   Timeout in seconds.
    *
    * @throws \Drupal\webpack\WebpackConfigNotValidException
    * @throws \Drupal\webpack\WebpackConfigWriteException
+   * @throws \Drupal\npm\Exception\NpmCommandFailedException
+   * @throws \RuntimeException
    */
-  public function serve($port = '8080');
+  public function serve($port = 1234, $customListener = NULL, $timeout = NULL);
 
   /**
    * Returns the bundle mapping from the state or config.
