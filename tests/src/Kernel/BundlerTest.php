@@ -32,29 +32,29 @@ class BundlerTest extends WebpackTestBase {
   public function testServe() {
     system('pkill node');
     $bundler = $this->bundler;
-    $counter = 0;
+    $reachableLibraries = [];
 
     $this->assertNull($bundler->getServePort(), 'Serve port is null initially.');
 
-    $outputListener = function ($type, $buffer) use ($bundler, &$counter) {
-      if ($counter++ == 2) {
-        // In the third chunk of output we expect the port to be set and
-        // the bundles to be reachable.
-        $port = $bundler->getServePort();
-        $this->assertNotEmpty($bundler->getServePort(), 'Serve port has been saved.');
-
+    $outputListener = function ($type, $buffer) use ($bundler, &$reachableLibraries) {
+      $port = $bundler->getServePort();
+      if ($port) {
         $client = \Drupal::httpClient();
         foreach ($this->librariesInspector->getEntryPoints() as $id => $path) {
           $response = $client->get("http://localhost:$port/$id.bundle.js");
-          $this->assertEquals(200, $response->getStatusCode(), "Bundle $id is reachable on the dev server.");
+          if ($response->getStatusCode() == 200) {
+            $reachableLibraries[$id] = TRUE;
+          }
         }
       }
     };
 
     try {
-      $this->bundler->serve(1234, $outputListener, 15);
+      $this->bundler->serve(1234, $outputListener, 5);
     } catch (ProcessTimedOutException $e) {
       // The process is expected to time out.
+    } finally {
+      $this->assertEquals(3, count($reachableLibraries), "Serve port is set and all libs are reachable on the dev server.");
     }
   }
 
