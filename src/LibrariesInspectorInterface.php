@@ -5,14 +5,14 @@ namespace Drupal\webpack;
 interface LibrariesInspectorInterface {
 
   /**
-   * Returns all the libraries defined by enabled modules and themes.
+   * Returns an array of js files that should be treated with webpack.
    *
    * @return array
    */
-  public function getAllLibraries();
+  public function getEntryPoints();
 
   /**
-   * Return a library by name.
+   * Returns a library by name.
    *
    * @param string $extension
    * @param string $name

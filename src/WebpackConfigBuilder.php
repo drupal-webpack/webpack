@@ -83,7 +83,7 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
       //      extensions: ['*', '.js', '.jsx']
       //  },
     ];
-    foreach ($this->getEntryPoints() as $id => $path) {
+    foreach ($this->librariesInspector->getEntryPoints() as $id => $path) {
       $config['entry'][$id] = DRUPAL_ROOT . '/' . $path;
     }
 
@@ -142,30 +142,6 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
       return false;
     }
     return $outputDir;
-  }
-
-  /**
-   * Returns an array of js files that should be treated with webpack.
-   *
-   * @return array
-   */
-  protected function getEntryPoints() {
-    $entryPoints = [];
-    foreach ($this->librariesInspector->getAllLibraries() as $extension => $libraries) {
-      foreach ($libraries as $libraryName => $library) {
-        if (!$this->librariesInspector->isWebpackLib($library)) {
-          continue;
-        }
-
-        foreach ($library['js'] as $jsAssetInfo) {
-          $path = $jsAssetInfo['data'];
-          $id = $this->librariesInspector->getJsFileId("$extension/$libraryName", $path);
-          $entryPoints[$id] = $path;
-        }
-      }
-    }
-
-    return $entryPoints;
   }
 
   /**

@@ -10,7 +10,7 @@ abstract class WebpackTestBase extends KernelTestBase {
   protected static $modules = ['npm', 'system', 'webpack', 'webpack_test_libs'];
 
   /**
-   * @var \Drupal\npm\Plugin\NpmExecutableInterface
+   * @var \Drupal\npm\NpmExecutableInterface
    */
   protected $npmExecutable;
 
@@ -44,16 +44,17 @@ abstract class WebpackTestBase extends KernelTestBase {
     $this->installConfig('webpack_test_libs');
     $this->installConfig('system');
 
-    $process = $this->npmExecutable->initPackageJson();
-//    throw new \Exception($process->getOutput() . $process->getErrorOutput());
+    // Run the install hook manually. It'll set some webpack config.
+    \module_load_include('install', 'webpack_test_libs');
+    \webpack_test_libs_install();
+
+    $this->npmExecutable->initPackageJson();
 
     // Add webpack dependencies.
-    $process = $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve', 'ramda']);
-//    throw new \Exception($process->getOutput() . $process->getErrorOutput());
-    // And the test libs.
-//    $this->npmExecutable->addPackages(['apollo-boost', 'ramda']);
+    $this->npmExecutable->addPackages(['webpack', 'webpack-cli', 'webpack-serve']);
 
-    // TODO: Create package.json and install dependencies.
+    // And the test libs.
+    $this->npmExecutable->addPackages(['ramda']);
   }
 
 }
