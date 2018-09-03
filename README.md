@@ -2,6 +2,8 @@
 
 Integrates Drupal with [webpack](https://webpack.js.org/).
 
+![build status](https://travis-ci.com/drupal-webpack/webpack.svg?branch=8.x-1.x)
+
 ## What it does?
 
 The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers (see [Webpack Babel](https://drupal.org/project/webpack_babel)).
