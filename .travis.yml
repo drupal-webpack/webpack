@@ -79,7 +79,7 @@ install:
 
 # Depending on the type of the build (branch vs PR) the TRAVIS_BRANCH hold different values (???)
 # @see https://graysonkoonce.com/getting-the-current-branch-name-during-a-pull-request-in-travis-ci/
-- export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH | sed --expression='s/8\.x\-1\.0/1\.0/g'; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+- export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 
 # Require the webpack module and symfony process. The latter is a dependency of npm and
 # composer doesn't do recursive resolution for packages fetched from custom repositories.
