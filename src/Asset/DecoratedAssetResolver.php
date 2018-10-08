@@ -5,8 +5,8 @@ namespace Drupal\webpack\Asset;
 use Drupal\Core\Asset\AssetResolverInterface;
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\State\StateInterface;
-use Drupal\webpack\BundlerInterface;
 use Drupal\webpack\LibrariesInspectorInterface;
+use Drupal\webpack\WebpackBundleInfoInterface;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 
@@ -23,9 +23,9 @@ class DecoratedAssetResolver implements AssetResolverInterface {
   protected $librariesInspector;
 
   /**
-   * @var \Drupal\webpack\BundlerInterface
+   * @var \Drupal\webpack\WebpackBundleInfoInterface
    */
-  protected $bundler;
+  protected $webpackBundleInfo;
 
   /**
    * @var \Drupal\Core\State\StateInterface
@@ -42,14 +42,14 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    *
    * @param \Drupal\Core\Asset\AssetResolverInterface $assetResolver
    * @param \Drupal\webpack\LibrariesInspectorInterface $librariesInspector
-   * @param \Drupal\webpack\BundlerInterface $bundler
+   * @param \Drupal\webpack\WebpackBundleInfoInterface $webpackBundleInfo
    * @param \Drupal\Core\State\StateInterface $state
    * @param \Psr\Log\LoggerInterface $logger
    */
-  public function __construct(AssetResolverInterface $assetResolver, LibrariesInspectorInterface $librariesInspector, BundlerInterface $bundler, StateInterface $state, LoggerInterface $logger) {
+  public function __construct(AssetResolverInterface $assetResolver, LibrariesInspectorInterface $librariesInspector, WebpackBundleInfoInterface $webpackBundleInfo, StateInterface $state, LoggerInterface $logger) {
     $this->assetResolver = $assetResolver;
     $this->librariesInspector = $librariesInspector;
-    $this->bundler = $bundler;
+    $this->webpackBundleInfo = $webpackBundleInfo;
     $this->state = $state;
     $this->logger = $logger;
   }
@@ -66,7 +66,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    */
   public function getJsAssets(AttachedAssetsInterface $assets, $optimize) {
     $devUrl = $this->getDevServerUrl();
-    $bundleMapping = $this->bundler->getBundleMapping();
+    $bundleMapping = $this->webpackBundleInfo->getBundleMapping();
     $result = $this->assetResolver->getJsAssets($assets, $optimize);
 
     if (!$devUrl && !$bundleMapping) {
@@ -191,7 +191,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    * @return bool
    */
   protected function getDevServerUrl() {
-    $port = $this->bundler->getServePort();
+    $port = $this->webpackBundleInfo->getServePort();
     if (!$port) {
       return false;
     }

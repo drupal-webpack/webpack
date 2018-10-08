@@ -25,6 +25,11 @@ abstract class WebpackTestBase extends KernelTestBase {
   protected $webpackConfigBuilder;
 
   /**
+   * @var \Drupal\webpack\WebpackBundleInfoInterface
+   */
+  protected $webpackBundleInfo;
+
+  /**
    * @var \Drupal\webpack\BundlerInterface
    */
   protected $bundler;
@@ -38,6 +43,7 @@ abstract class WebpackTestBase extends KernelTestBase {
     $this->npmExecutable = $this->container->get('plugin.manager.npm_executable')->getExecutable();
     $this->librariesInspector = $this->container->get('webpack.libraries_inspector');
     $this->webpackConfigBuilder= $this->container->get('webpack.config_builder');
+    $this->webpackBundleInfo = $this->container->get('webpack.bundle_info');
     $this->bundler = $this->container->get('webpack.bundler');
 
     $this->installConfig('webpack');

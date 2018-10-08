@@ -5,14 +5,17 @@ services:
   webpack.config_builder:
     class: Drupal\webpack\WebpackConfigBuilder
     arguments: [ '@webpack.libraries_inspector', '@file_system', '@config.factory', '@logger.channel.webpack', '@module_handler']
+  webpack.bundle_info:
+    class: Drupal\webpack\WebpackBundleInfo
+    arguments: [ '@webpack.config_builder', '@state', '@config.factory']
   webpack.bundler:
     class: Drupal\webpack\Bundler
-    arguments: [ '@webpack.config_builder', '@state', '@config.factory', '@file_system', '@plugin.manager.npm_executable']
+    arguments: [ '@webpack.config_builder', '@webpack.bundle_info', '@state', '@config.factory', '@plugin.manager.npm_executable']
 
   asset.resolver.webpack:
     class: Drupal\webpack\Asset\DecoratedAssetResolver
     decorates: asset.resolver
-    arguments: [ '@asset.resolver.webpack.inner', '@webpack.libraries_inspector', '@webpack.bundler', '@state', '@logger.channel.webpack', '@config.factory']
+    arguments: [ '@asset.resolver.webpack.inner', '@webpack.libraries_inspector', '@webpack.bundle_info', '@state', '@logger.channel.webpack', '@config.factory']
 
   logger.channel.webpack:
     parent: logger.channel_base

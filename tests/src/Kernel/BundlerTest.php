@@ -17,10 +17,10 @@ class BundlerTest extends WebpackTestBase {
   }
 
   public function testBuild() {
-    self::assertEmpty($this->bundler->getBundleMapping(), 'Bundle mapping is empty initially.');
+    self::assertEmpty($this->webpackBundleInfo->getBundleMapping(), 'Bundle mapping is empty initially.');
     list(, , $messages) = $this->bundler->build();
 
-    $bundleMapping = $this->bundler->getBundleMapping();
+    $bundleMapping = $this->webpackBundleInfo->getBundleMapping();
     self::assertEquals(3, count($bundleMapping), '3 js files built.');
 
     $messages = implode("\n", $messages);
@@ -31,13 +31,13 @@ class BundlerTest extends WebpackTestBase {
 
   public function testServe() {
     system('pkill node');
-    $bundler = $this->bundler;
+    $webpackBundleInfo = $this->webpackBundleInfo;
     $reachableLibraries = [];
 
-    $this->assertNull($bundler->getServePort(), 'Serve port is null initially.');
+    $this->assertNull($webpackBundleInfo->getServePort(), 'Serve port is null initially.');
 
-    $outputListener = function ($type, $buffer) use ($bundler, &$reachableLibraries) {
-      $port = $bundler->getServePort();
+    $outputListener = function ($type, $buffer) use ($webpackBundleInfo, &$reachableLibraries) {
+      $port = $webpackBundleInfo->getServePort();
       if ($port) {
         $client = \Drupal::httpClient();
         foreach ($this->librariesInspector->getEntryPoints() as $id => $path) {

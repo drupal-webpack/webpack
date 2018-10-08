@@ -36,20 +36,4 @@ interface BundlerInterface {
    */
   public function serve($port = 1234, $customListener = NULL, $timeout = NULL);
 
-  /**
-   * Returns the bundle mapping from the state or config.
-   *
-   * @see ::getBundleMappingStorage
-   *
-   * @return array|null
-   */
-  public function getBundleMapping();
-
-  /**
-   * Returns the port on which the dev server was last started
-   *
-   * @return mixed
-   */
-  public function getServePort();
-
 }
