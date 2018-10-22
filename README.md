@@ -26,6 +26,14 @@ Once you've got `package.json`, add the following npm dependencies.
 
 Add `webpack: true` to your library definition in `module_name.libraries.yml`.
 
+### Local development
+
+For local development, start the dev server with `drush webpack:serve --port 1234` and reload the page. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
+
+When running inside a container add the `--docker`. This alone will work if the webserver is ran in the same container as drush. Otherwise, drupal will need some additional info in order to detect the server, i.e. `--dev-server-host=cli` where cli the hostname (i.e. the service name from docker-compose) of the container that runs drush.
+
+### Building for prod
+
 For local development, start the dev server with `drush webpack:serve --port 1234` and reload the page. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
 
 On the server, add `drush webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
@@ -34,7 +42,7 @@ The output directory can be changed at `/admin/config/webpack/settings` e.g. to 
 
 ## How it works?
 
-Setup steps and the modus operandi have been described in [Progressive Decoupling - The why and the how](https://drupal-progressive-decoupling.github.io/#/composer-require-webpack) at Decoupled Drupal Days NY 2018.
+Setup steps and the modus operandi have been described in [Progressive Decoupling - The why and the how](https://drupal-progressive-decoupling.github.io/#/composer-require-webpack) at Decoupled Drupal Days NY 2018 ([video](https://www.youtube.com/watch?v=i4Ktx0pz8xI)).
 
 ## Should I use it now?
 
