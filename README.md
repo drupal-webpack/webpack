@@ -20,7 +20,7 @@ Your project needs to have a `package.json` file somewhere up the directory tree
 
 Once you've got `package.json`, add the following npm dependencies.
 `yarn add webpack` 
-`yarn add webpack-serve --dev` 
+`yarn add webpack-dev-server --dev` 
 
 ## Usage
 

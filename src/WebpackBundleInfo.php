@@ -80,8 +80,8 @@ class WebpackBundleInfo implements WebpackBundleInfoInterface {
   /**
    * {@inheritdoc}
    */
-  public function getServePort() {
-    return $this->state->get('webpack_serve_port', NULL);
+  public function getServeUrl() {
+    return $this->state->get('webpack_serve_url', NULL);
   }
 
 }

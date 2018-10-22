@@ -9,4 +9,4 @@ dependencies:
 npm_dependencies:
   - webpack
   - webpack-cli
-  - webpack-serve
+  - webpack-dev-server

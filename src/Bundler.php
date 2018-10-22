@@ -94,19 +94,23 @@ class Bundler implements BundlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function serve($port = '1234', $customListener = NULL, $timeout = NULL) {
+  public function serve($port = '1234', $docker = false, $devServerHost = 'localhost', $customListener = NULL, $timeout = NULL) {
     $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'serve']);
     $configPath = $this->webpackConfigBuilder->writeWebpackConfig($config);
 
-    // Webpack-serve will pick a free port if the given one is occupied, so
+    // Webpack-dev-server will pick a free port if the given one is occupied, so
     // we need to parse the output to get the final value.
-    $args = ['webpack-serve', $configPath, '--port', $port];
+    $args = ['webpack-dev-server', '--config', $configPath, '--port', $port];
+    if ($docker) {
+      $args = array_merge($args, ['--host', '0.0.0.0', '--disable-host-check']);
+    }
     $state = $this->state;
-    $outputListener = function ($type, $buffer) use ($state, $customListener) {
+    $outputListener = function ($type, $buffer) use ($state, $customListener, $devServerHost) {
       $matches = [];
-      $pattern = '/Project is running at .*:([0-9]+)/';
+      $pattern = '/Project is running at .*\:([0-9]+)/';
       if (preg_match($pattern, $buffer, $matches)) {
-        $state->set('webpack_serve_port', $matches[1]);
+        $port = $matches[1];
+        $state->set('webpack_serve_url', "$devServerHost:$port");
       }
 
       if (is_callable($customListener)) {

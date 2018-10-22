@@ -191,14 +191,20 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    * @return bool
    */
   protected function getDevServerUrl() {
-    $port = $this->webpackBundleInfo->getServePort();
-    if (!$port) {
+    $url = $this->webpackBundleInfo->getServeUrl();
+    if (!$url) {
       return false;
     }
-    $connection = @fsockopen('localhost', $port);
+    list($host, $port) = explode(':', $url);
+    $connection = fsockopen($host, $port);
 
     if (is_resource($connection)) {
       fclose($connection);
+      // The host is only needed to check the dev server availability in this
+      // method. We're on the server now. The browser won't be able to reach the
+      // docker hostname of the dev server machine (if one was provided), so
+      // hardcode the host as 'localhost'. The developer needs to take care
+      // of binding the port from the container to the host.
       return "http://localhost:$port";
     }
 

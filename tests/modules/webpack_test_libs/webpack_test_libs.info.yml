@@ -4,7 +4,7 @@ description: 'Add webpack libraries for testing.'
 core: 8.x
 package: 'Javascript'
 dependencies:
-  - webpack
+  - webpack:webpack
 npm_dependencies:
   - ramda
   - apollo-boost

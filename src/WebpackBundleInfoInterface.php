@@ -43,10 +43,10 @@ interface WebpackBundleInfoInterface {
   public function getBundleMappingStorage();
 
   /**
-   * Returns the port on which the dev server was last started
+   * Returns the URL under which the dev server was last started.
    *
    * @return mixed
    */
-  public function getServePort();
+  public function getServeUrl();
 
 }

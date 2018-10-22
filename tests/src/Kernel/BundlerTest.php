@@ -34,14 +34,14 @@ class BundlerTest extends WebpackTestBase {
     $webpackBundleInfo = $this->webpackBundleInfo;
     $reachableLibraries = [];
 
-    $this->assertNull($webpackBundleInfo->getServePort(), 'Serve port is null initially.');
+    $this->assertNull($webpackBundleInfo->getServeUrl(), 'Serve url is null initially.');
 
     $outputListener = function ($type, $buffer) use ($webpackBundleInfo, &$reachableLibraries) {
-      $port = $webpackBundleInfo->getServePort();
-      if ($port) {
+      $url = $webpackBundleInfo->getServeUrl();
+      if ($url) {
         $client = \Drupal::httpClient();
         foreach ($this->librariesInspector->getEntryPoints() as $id => $path) {
-          $response = $client->get("http://localhost:$port/$id.bundle.js");
+          $response = $client->get("http://$url/$id.bundle.js");
           if ($response->getStatusCode() == 200) {
             $reachableLibraries[$id] = TRUE;
           }
