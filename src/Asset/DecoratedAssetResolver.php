@@ -196,7 +196,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
       return false;
     }
     list($host, $port) = explode(':', $url);
-    $connection = fsockopen($host, $port);
+    $connection = @fsockopen($host, $port);
 
     if (is_resource($connection)) {
       fclose($connection);

@@ -49,8 +49,8 @@ class WebpackDrushCommands extends DrushCommands {
 
     $this->output()->writeln('Hey! Building the libs for you.');
     try {
-      list($success, $output, $messages) = $this->bundler->build();
-      array_walk($output, $writeLine);
+      list($success, $process, $messages) = $this->bundler->build();
+      array_walk($process->getOutput(), $writeLine);
       $this->output()->writeln('');
       array_walk($messages, $writeLine);
       $result = $success;
