@@ -50,7 +50,7 @@ class BundlerTest extends WebpackTestBase {
     };
 
     try {
-      $this->bundler->serve(1234, $outputListener, 5);
+      $this->bundler->serve(1234, false, 'localhost', $outputListener, 5);
     } catch (ProcessTimedOutException $e) {
       // The process is expected to time out.
     } finally {
