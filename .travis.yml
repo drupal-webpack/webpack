@@ -107,4 +107,4 @@ install:
 - cp $DRUPAL_BUILD_DIR/modules/contrib/webpack/phpunit.xml.dist $DRUPAL_BUILD_DIR/core/phpunit.xml
 
 script:
-- $DRUPAL_BUILD_DIR/vendor/bin/phpunit --configuration $DRUPAL_BUILD_DIR/core/phpunit.xml $TRAVIS_BUILD_DIR;
+- $DRUPAL_BUILD_DIR/vendor/bin/phpunit --configuration $DRUPAL_BUILD_DIR/core/phpunit.xml $DRUPAL_BUILD_DIR/modules/contrib/webpack
