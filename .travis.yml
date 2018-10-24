@@ -107,7 +107,7 @@ install:
 - cp $DRUPAL_BUILD_DIR/modules/contrib/webpack/phpunit.xml.dist $DRUPAL_BUILD_DIR/core/phpunit.xml
 
 script:
-- $DRUPAL_BUILD_DIR/vendor/bin/drush serve > log.txt 2>&1 &
+- $DRUPAL_BUILD_DIR/vendor/bin/drush serve #> log.txt 2>&1 &
 - until netstat -an 2>/dev/null | grep '8888.*LISTEN'; sleep 1; curl -I http://127.0.0.1:8888 ; do true; done
 - $DRUPAL_BUILD_DIR/vendor/bin/phpunit --configuration $DRUPAL_BUILD_DIR/core/phpunit.xml $DRUPAL_BUILD_DIR/modules/contrib/webpack
 - kill $(jobs -p) || true
