@@ -3,7 +3,9 @@
 namespace Drupal\webpack;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\npm\Plugin\NpmExecutableNotFoundException;
 use Drupal\npm\Plugin\NpmExecutablePluginManager;
 
 class Bundler implements BundlerInterface {
@@ -29,26 +31,25 @@ class Bundler implements BundlerInterface {
   protected $configFactory;
 
   /**
-   * @var \Drupal\npm\Plugin\NpmExecutableInterface
+   * @var \Drupal\npm\Plugin\NpmExecutablePluginManager
    */
-  protected $npmExecutable;
+  protected $npmExecutablePluginManager;
 
   /**
    * Bundler constructor.
    *
    * @param \Drupal\webpack\WebpackConfigBuilderInterface $webpackConfigBuilder
+   * @param \Drupal\webpack\WebpackBundleInfoInterface $webpackBundleInfo
    * @param \Drupal\Core\State\StateInterface $state
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    * @param \Drupal\npm\Plugin\NpmExecutablePluginManager $npmExecutablePluginManager
-   *
-   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
    */
   public function __construct(WebpackConfigBuilderInterface $webpackConfigBuilder, WebpackBundleInfoInterface $webpackBundleInfo, StateInterface $state, ConfigFactoryInterface $configFactory, NpmExecutablePluginManager $npmExecutablePluginManager) {
     $this->webpackConfigBuilder = $webpackConfigBuilder;
     $this->webpackBundleInfo = $webpackBundleInfo;
     $this->state = $state;
     $this->configFactory = $configFactory;
-    $this->npmExecutable = $npmExecutablePluginManager->getExecutable();
+    $this->npmExecutablePluginManager = $npmExecutablePluginManager;
   }
 
   /**
@@ -61,7 +62,7 @@ class Bundler implements BundlerInterface {
     $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'build']);
     $configPath = $this->webpackConfigBuilder->writeWebpackConfig($config);
 
-    $process = $this->npmExecutable->runScript(['webpack', '--config', $configPath]);
+    $process = $this->getNpmExecutable()->runScript(['webpack', '--config', $configPath]);
 
     $entryPointLines = [];
     if (preg_match_all('/Entrypoint (.*) = (.*)/', $process->getOutput(), $matches)) {
@@ -117,7 +118,14 @@ class Bundler implements BundlerInterface {
         call_user_func($customListener, $type, $buffer);
       }
     };
-    $this->npmExecutable->runScript($args, $outputListener, $timeout);
+    $this->getNpmExecutable()->runScript($args, $outputListener, $timeout);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNpmExecutable() {
+    return $this->npmExecutablePluginManager->getExecutable();
   }
 
 }

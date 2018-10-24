@@ -10,6 +10,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\npm\Exception\NpmCommandFailedException;
+use Drupal\npm\Plugin\NpmExecutableNotFoundException;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -43,20 +44,18 @@ class WebpackDrushCommands extends DrushCommands {
    */
   public function build($options = []) {
     $result = FALSE;
-    $writeLine = function ($line) {
-      $this->output()->writeln($line);
-    };
 
     $this->output()->writeln('Hey! Building the libs for you.');
     try {
       list($success, $process, $messages) = $this->bundler->build();
-      array_walk($process->getOutput(), $writeLine);
       $this->output()->writeln('');
-      array_walk($messages, $writeLine);
+      $this->output()->writeln($process->getOutput());
       $result = $success;
     } catch (WebpackConfigNotValidException $e) {
       $this->output()->writeln($e->getMessage());
     } catch (WebpackConfigWriteException $e) {
+      $this->output()->writeln($e->getMessage());
+    } catch (NpmExecutableNotFoundException $e) {
       $this->output()->writeln($e->getMessage());
     } catch (NpmCommandFailedException $e) {
       $this->output()->writeln("The npm script has failed. Details:\n{$e->getMessage()}");
@@ -99,6 +98,8 @@ class WebpackDrushCommands extends DrushCommands {
     } catch (WebpackConfigNotValidException $e) {
       $this->output()->writeln($e->getMessage());
     } catch (WebpackConfigWriteException $e) {
+      $this->output()->writeln($e->getMessage());
+    } catch (NpmExecutableNotFoundException $e) {
       $this->output()->writeln($e->getMessage());
     } catch (NpmCommandFailedException $e) {
       $this->output()->writeln("The npm script has failed. Details:\n{$e->getMessage()}");

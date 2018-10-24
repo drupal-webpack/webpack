@@ -24,7 +24,10 @@ interface BundlerInterface {
    * @param int|NULL $timeout
    *   Timeout in seconds.
    *
-   * @return
+   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
+   * @throws \Drupal\npm\Exception\NpmCommandFailedException
+   * @throws \Drupal\webpack\WebpackConfigNotValidException
+   * @throws \Drupal\webpack\WebpackConfigWriteException
    */
   public function serve($port = 1234, $docker = false, $devServerHost = 'localhost', $customListener = NULL, $timeout = NULL);
 
@@ -34,10 +37,20 @@ interface BundlerInterface {
    * @return array
    *   An array with two items: 0: success and 1: output of the command
    *
+   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
    * @throws \Drupal\webpack\WebpackConfigNotValidException
    * @throws \Drupal\webpack\WebpackConfigWriteException
    * @throws \Drupal\npm\Exception\NpmCommandFailedException
    */
   public function build();
+
+  /**
+   * Returns the npm executable plugin.
+   *
+   * @return \Drupal\npm\Plugin\NpmExecutableInterface
+   *
+   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
+   */
+  public function getNpmExecutable();
 
 }
