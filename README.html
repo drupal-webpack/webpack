@@ -43,6 +43,10 @@ On the server, add <code>drush webpack:build</code> to your after-deploy steps. 
 
 The output directory can be changed at <code>/admin/config/webpack/settings</code> e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building (<a href="https://github.com/drupal-webpack/webpack/blob/e498e8b2ce8b986fe91b280af7b3797bdfa6f41b/src/Bundler.php#L133" target="_blank">details</a>).
 
+<h3>Know issues</h3>
+
+Some builds can break because of javascript aggregation. It can be disabled at /admin/config/development/performance.
+
 <h3>How does it work?</h3>
 
 Setup steps and the modus operandi have been described in <a href="https://drupal-progressive-decoupling.github.io/#/composer-require-webpack" target="_blank">Progressive Decoupling - The why and the how</a> at Decoupled Drupal Days NY 2018 (<a href="https://www.youtube.com/watch?v=i4Ktx0pz8xI" target="_blank">video</a>).
