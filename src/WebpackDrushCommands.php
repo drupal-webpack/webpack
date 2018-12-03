@@ -2,6 +2,7 @@
 
 namespace Drupal\webpack;
 
+use Drupal\Component\Annotation\Plugin;
 use Drupal\Core\Asset\LibraryDiscoveryInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -38,8 +39,8 @@ class WebpackDrushCommands extends DrushCommands {
    * Builds the output files.
    *
    * @command webpack:build
-   * @aliases wpbuild
-   * @usage drush wepback:build
+   * @aliases wpb
+   * @usage drush webpack:build
    *   Build the js bundles.
    */
   public function build($options = []) {
@@ -103,6 +104,46 @@ class WebpackDrushCommands extends DrushCommands {
       $this->output()->writeln($e->getMessage());
     } catch (NpmCommandFailedException $e) {
       $this->output()->writeln("The npm script has failed. Details:\n{$e->getMessage()}");
+    }
+  }
+
+  /**
+   * Build a single library in a way that doesn't require the target sites to
+   * have the webpack module enabled.
+   *
+   * @param string $libraryId
+   *   Target library's id.
+   *
+   * @command webpack:build-single
+   * @aliases wpbs
+   * @usage drush webpack:build-single [module_name]/[library_name]
+   *   Use source files to build [module_name]/[library_name] into the dist dir.
+   */
+  public function buildSingle($libraryId) {
+    $result = FALSE;
+
+    $this->output()->writeln('Hey! Building the libs for you.');
+    try {
+      list($success, $process, $messages) = $this->bundler->buildSingle($libraryId);
+      $this->output()->writeln('');
+      $this->output()->writeln($process->getOutput());
+      $result = $success;
+    } catch (WebpackConfigNotValidException $e) {
+      $this->output()->writeln($e->getMessage());
+    } catch (WebpackConfigWriteException $e) {
+      $this->output()->writeln($e->getMessage());
+    } catch (NpmExecutableNotFoundException $e) {
+      $this->output()->writeln($e->getMessage());
+    } catch (NpmCommandFailedException $e) {
+      $this->output()->writeln("The npm script has failed. Details:\n{$e->getMessage()}");
+    } finally {
+      $this->output()->writeln($this->t(
+        'Build :status',
+        [':status' => $result ?
+          $this->t('successful') :
+          $this->t('failed')]
+      )->render()
+      );
     }
   }
 

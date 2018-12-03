@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\webpack\Plugin\ConfigProcessorPluginManager;
 
 class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
@@ -35,6 +36,11 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
   protected $moduleHandler;
 
   /**
+   * @var \Drupal\webpack\Plugin\ConfigProcessorPluginManager
+   */
+  protected $configProcessorPluginManager;
+
+  /**
    * WebpackConfigBuilder constructor.
    *
    * @param \Drupal\webpack\LibrariesInspectorInterface $librariesInspector
@@ -43,18 +49,19 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
    * @param \Drupal\Core\Logger\LoggerChannelInterface $loggerChannel
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    */
-  public function __construct(LibrariesInspectorInterface $librariesInspector, FileSystemInterface $fileSystem, ConfigFactoryInterface $configFactory, LoggerChannelInterface $loggerChannel, ModuleHandlerInterface $moduleHandler) {
+  public function __construct(LibrariesInspectorInterface $librariesInspector, FileSystemInterface $fileSystem, ConfigFactoryInterface $configFactory, LoggerChannelInterface $loggerChannel, ModuleHandlerInterface $moduleHandler, ConfigProcessorPluginManager $configProcessorPluginManager) {
     $this->librariesInspector = $librariesInspector;
     $this->fileSystem = $fileSystem;
     $this->configFactory = $configFactory;
     $this->loggerChannel = $loggerChannel;
     $this->moduleHandler = $moduleHandler;
+    $this->configProcessorPluginManager = $configProcessorPluginManager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildWebpackConfig($context) {
+  public function buildWebpackConfig($context, $outputDir, $outputNamePattern = '[name].bundle.js', $entrypoints = NULL) {
     $config = [
       'mode' => 'development',
       //      'optimization' => [
@@ -70,26 +77,24 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
       //          ],
       //        ],
       //      ],
-      //      'module' => [
-      //        'rules' => [
-      //          [
-      //            'test' => '/\.(js|jsx)$/',
-      //            'exclude' => /node_modules/,
-      //        use: ['babel-loader']
-      //          ]
-      //    ]
-      //  },
-      //  resolve: {
-      //      extensions: ['*', '.js', '.jsx']
-      //  },
     ];
-    foreach ($this->librariesInspector->getEntryPoints() as $id => $path) {
+    if (empty($entrypoints)) {
+      $entrypoints = $this->librariesInspector->getAllEntryPoints();
+    }
+    foreach ($entrypoints as $id => $path) {
       $config['entry'][$id] = DRUPAL_ROOT . '/' . $path;
     }
 
-    /** @var \Drupal\webpack\Plugin\ConfigProcessorPluginManager $configProcessorManager */
-    $configProcessorManager = \Drupal::service('plugin.manager.webpack.config_processor');
-    foreach ($configProcessorManager->getAllSorted() as $configProcessorPlugin) {
+    if (!$this->prepareDirectory($outputDir)) {
+      throw new WebpackConfigNotValidException('Output directory is not writable.');
+    }
+
+    $config['output'] = [
+      'filename' => $outputNamePattern,
+      'path' => $this->fileSystem->realpath($outputDir),
+    ];
+
+    foreach ($this->configProcessorPluginManager->getAllSorted() as $configProcessorPlugin) {
       $configProcessorPlugin->processConfig($config, $context);
     }
 
@@ -99,7 +104,6 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
     return $config;
   }
-
 
   /**
    * {@inheritdoc}
@@ -113,7 +117,7 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
     // The strings provided in backticks should be unquoted.
     $entities = $this->mapJsEntities($config);
-    // Encode and re-add the function bodys.
+    // Encode and re-add the function bodies.
     $configString = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     $this->decodeJsEntities($configString, $entities);
 
@@ -132,16 +136,46 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
   /**
    *{@inheritdoc}
    */
-  public function getOutputDir($createIfNeeded = FALSE) {
-    $outputDir = $this->configFactory->get('webpack.settings')->get('output_path');
-    if ($createIfNeeded && !file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
+  public function getOutputDir() {
+    return $this->configFactory->get('webpack.settings')->get('output_path');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingleLibOutputFilePath($library) {
+    if (!$this->librariesInspector->isWebpackLib($library)) {
+      // Library found but it's not a webpack lib.
+      throw new WebpackNotAWebpackLibraryException();
+    }
+
+    if (count($library['js']) !== 1) {
+      // For the libraries to work without the webpack module they need to have
+      // exactly one JS entrypoint.
+      throw new WebpackSingleLibraryInvalidNumberOfJsEntrypointsException();
+    }
+
+    return $library['js'][0]['data'];
+  }
+
+  /**
+   * Checks if the given directory exists and creates it if needed.
+   *
+   * @param string $outputDir
+   *   The target directory path.
+   *
+   * @return bool
+   *   True if the directory is writable.
+   */
+  protected function prepareDirectory($outputDir) {
+    if (!file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
       $this->loggerChannel->error(
         'Webpack output directory @dir is not writable.',
         ['@dir' => $outputDir]
       );
-      return false;
+      return FALSE;
     }
-    return $outputDir;
+    return TRUE;
   }
 
   /**
@@ -208,6 +242,46 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
 }
 
-class WebpackConfigNotValidException extends \Exception {}
+class WebpackConfigNotValidException extends \Exception {
 
-class WebpackConfigWriteException extends \Exception {}
+  public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
+    if (empty($message)) {
+      $message = 'The provided webpack config is not valid.';
+    }
+    parent::__construct($message, $code, $previous);
+  }
+
+}
+
+class WebpackConfigWriteException extends \Exception {
+
+  public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
+    if (empty($message)) {
+      $message = 'Webpack config couldn\'t be written.';
+    }
+    parent::__construct($message, $code, $previous);
+  }
+
+}
+
+class WebpackNotAWebpackLibraryException extends \Exception {
+
+  public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
+    if (empty($message)) {
+      $message = 'The provided library is not marked to be handled with webpack. Add "webpack: true" to its definition.';
+    }
+    parent::__construct($message, $code, $previous);
+  }
+
+}
+
+class WebpackSingleLibraryInvalidNumberOfJsEntrypointsException extends \Exception {
+
+  public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
+    if (empty($message)) {
+      $message = 'Only libraries with exactly one JavaScript entry file can be built as stand-alone.';
+    }
+    parent::__construct($message, $code, $previous);
+  }
+
+}

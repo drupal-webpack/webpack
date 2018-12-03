@@ -3,6 +3,7 @@
 namespace Drupal\webpack;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\Extension;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\npm\Plugin\NpmExecutableNotFoundException;
@@ -36,6 +37,11 @@ class Bundler implements BundlerInterface {
   protected $npmExecutablePluginManager;
 
   /**
+   * @var \Drupal\webpack\LibrariesInspectorInterface
+   */
+  protected $librariesInspector;
+
+  /**
    * Bundler constructor.
    *
    * @param \Drupal\webpack\WebpackConfigBuilderInterface $webpackConfigBuilder
@@ -44,12 +50,13 @@ class Bundler implements BundlerInterface {
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    * @param \Drupal\npm\Plugin\NpmExecutablePluginManager $npmExecutablePluginManager
    */
-  public function __construct(WebpackConfigBuilderInterface $webpackConfigBuilder, WebpackBundleInfoInterface $webpackBundleInfo, StateInterface $state, ConfigFactoryInterface $configFactory, NpmExecutablePluginManager $npmExecutablePluginManager) {
+  public function __construct(WebpackConfigBuilderInterface $webpackConfigBuilder, WebpackBundleInfoInterface $webpackBundleInfo, StateInterface $state, ConfigFactoryInterface $configFactory, NpmExecutablePluginManager $npmExecutablePluginManager, LibrariesInspectorInterface $librariesInspector) {
     $this->webpackConfigBuilder = $webpackConfigBuilder;
     $this->webpackBundleInfo = $webpackBundleInfo;
     $this->state = $state;
     $this->configFactory = $configFactory;
     $this->npmExecutablePluginManager = $npmExecutablePluginManager;
+    $this->librariesInspector = $librariesInspector;
   }
 
   /**
@@ -57,9 +64,8 @@ class Bundler implements BundlerInterface {
    */
   public function build() {
     $mapping = [];
-    $exitCode = NULL;
     $outputDir = $this->webpackConfigBuilder->getOutputDir();
-    $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'build']);
+    $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'build'], $outputDir);
     $configPath = $this->webpackConfigBuilder->writeWebpackConfig($config);
 
     $process = $this->getNpmExecutable()->runScript(['webpack', '--config', $configPath]);
@@ -95,8 +101,32 @@ class Bundler implements BundlerInterface {
   /**
    * {@inheritdoc}
    */
+  public function buildSingle($libraryId) {
+    $library = $this->librariesInspector->getLibraryById($libraryId);
+
+    $outputPath = $this->webpackConfigBuilder->getSingleLibOutputFilePath($library, TRUE);
+    $outputPathParts = explode('/', $outputPath);
+    $outputFileName = array_pop($outputPathParts);
+    $outputDir = implode('/', $outputPathParts);
+
+    $context = [
+      'command' => 'build-single',
+      'library' => $library,
+    ];
+    $entryPoints = $this->librariesInspector->getEntryPoints($library, $libraryId);
+    $config = $this->webpackConfigBuilder->buildWebpackConfig($context, $outputDir, $outputFileName, $entryPoints);
+    $configPath = $this->webpackConfigBuilder->writeWebpackConfig($config);
+    $process = $this->getNpmExecutable()->runScript(['webpack', '--config', $configPath]);
+
+    return [TRUE, $process, []];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function serve($port = '1234', $docker = false, $devServerHost = 'localhost', $customListener = NULL, $timeout = NULL) {
-    $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'serve']);
+    $outputDir = $this->webpackConfigBuilder->getOutputDir();
+    $config = $this->webpackConfigBuilder->buildWebpackConfig(['command' => 'serve'], $outputDir);
     $configPath = $this->webpackConfigBuilder->writeWebpackConfig($config);
 
     // Webpack-dev-server will pick a free port if the given one is occupied, so
