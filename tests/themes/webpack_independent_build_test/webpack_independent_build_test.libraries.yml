@@ -1,0 +1,5 @@
+independent_lib:
+  header: true
+  webpack: true
+  js:
+    js/dist/independent-lib.js: { preprocess: false, source: 'js/src/independent-lib.js' }

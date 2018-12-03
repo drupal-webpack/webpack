@@ -21,11 +21,19 @@ class BundlerTest extends WebpackTestBase {
     list(, , $messages) = $this->bundler->build();
 
     $bundleMapping = $this->webpackBundleInfo->getBundleMapping();
-    self::assertEquals(3, count($bundleMapping), '3 js files built.');
+    self::assertEquals(4, count($bundleMapping), '4 js files built.');
 
     $messages = implode("\n", $messages);
     foreach ($bundleMapping as $entryPoint => $files) {
       $this->assertRegExp("/Entrypoint $entryPoint/", $messages, 'Expected entrypoint found in the messages.');
+    }
+  }
+
+  public function testBuildSingle() {
+    list(, $process, $messages) = $this->bundler->buildSingle('webpack_independent_build_test/independent_lib');
+    if (!preg_match('/Entrypoint webpack_independent_build_test-independent_lib-independent-lib = independent-lib.js/', $process->getOutput(), $matches)) {
+      $this->fail('webpack_independent_build_test-independent_lib-independent-lib not found in buildSingle\'s output.');
+      return;
     }
   }
 
@@ -40,7 +48,7 @@ class BundlerTest extends WebpackTestBase {
       $url = $webpackBundleInfo->getServeUrl();
       if ($url) {
         $client = \Drupal::httpClient();
-        foreach ($this->librariesInspector->getEntryPoints() as $id => $path) {
+        foreach ($this->librariesInspector->getAllEntryPoints() as $id => $path) {
           $response = $client->get("http://$url/$id.bundle.js");
           if ($response->getStatusCode() == 200) {
             $reachableLibraries[$id] = TRUE;
@@ -54,7 +62,7 @@ class BundlerTest extends WebpackTestBase {
     } catch (ProcessTimedOutException $e) {
       // The process is expected to time out.
     } finally {
-      $this->assertEquals(3, count($reachableLibraries), "Serve port is set and all libs are reachable on the dev server.");
+      $this->assertEquals(4, count($reachableLibraries), "Serve port is set and all libs are reachable on the dev server.");
     }
   }
 

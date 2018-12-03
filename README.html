@@ -23,9 +23,9 @@ The module allows developers to have their Drupal libraries bundled by webpack. 
 
 Your project needs to have a <code>package.json</code> file somewhere up the directory tree. In drupal-composer projects, it is a common practice to place one next to the webroot and the project-wide <code>composer.json</code>. Placing the file inside the webroot would work too. If you don't have such a file, <code>yarn init -yp</code> will generate an empty one.
 
-Once you've got <code>package.json</code>, add the following npm dependencies.
-<code>yarn add webpack</code>
-<code>yarn add webpack-dev-server --dev</code>
+Once you've got <code>package.json</code>, add the module as a local dependency:
+
+<code>yarn add file:./web/modules/contrib/webpack</code>
 
 <h3>Usage</h3>
 

@@ -45,6 +45,22 @@ interface BundlerInterface {
   public function build();
 
   /**
+   * Builds given library in a way that doesn't require webpack runtime.
+   *
+   * The library can only have one JavaScript entry file.
+   *
+   * @param string $libraryId
+   *   The library's id in this format [extension_name]/[library_name].
+   *
+   * @return array
+   * @throws \Drupal\npm\Exception\NpmCommandFailedException
+   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
+   * @throws \Drupal\webpack\WebpackConfigNotValidException
+   * @throws \Drupal\webpack\WebpackConfigWriteException
+   */
+  public function buildSingle($libraryId);
+
+  /**
    * Returns the npm executable plugin.
    *
    * @return \Drupal\npm\Plugin\NpmExecutableInterface
