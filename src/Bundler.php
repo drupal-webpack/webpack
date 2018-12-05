@@ -136,12 +136,27 @@ class Bundler implements BundlerInterface {
       $args = array_merge($args, ['--host', '0.0.0.0', '--disable-host-check']);
     }
     $state = $this->state;
+
+    // Reset the file mapping.
+    $state->set('webpack_serve_mapping', []);
     $outputListener = function ($type, $buffer) use ($state, $customListener, $devServerHost) {
       $matches = [];
       $pattern = '/Project is running at .*\:([0-9]+)/';
       if (preg_match($pattern, $buffer, $matches)) {
         $port = $matches[1];
         $state->set('webpack_serve_url', "$devServerHost:$port");
+      }
+
+      if (preg_match_all('/Entrypoint (.*) = (.*)/', $buffer, $matches)) {
+        list($lines, $entryPoints, $files) = $matches;
+        $devMapping = $state->get('webpack_serve_mapping', []);
+        foreach ($entryPoints as $key => $entryPoint) {
+          $entryPoint = $this->clearOutput($entryPoint);
+          foreach (explode(' ', $files[$key]) as $fileName) {
+            $devMapping[$entryPoint][] = $this->clearOutput($fileName);
+          }
+        }
+        $state->set('webpack_serve_mapping', $devMapping);
       }
 
       if (is_callable($customListener)) {
@@ -156,6 +171,18 @@ class Bundler implements BundlerInterface {
    */
   public function getNpmExecutable() {
     return $this->npmExecutablePluginManager->getExecutable();
+  }
+
+  /**
+   * Removes bash control characters from the string.
+   *
+   * @param string $string
+   *   Raw string
+   *
+   * @return string
+   */
+  protected function clearOutput($string) {
+    return preg_replace('#\\x1b[[][^A-Za-z]*[A-Za-z]#', '', $string);
   }
 
 }
