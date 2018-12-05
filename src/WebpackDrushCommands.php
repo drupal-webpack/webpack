@@ -77,18 +77,24 @@ class WebpackDrushCommands extends DrushCommands {
    * @command webpack:serve
    * @option port Port to start the dev server on.
    * @option docker Add this option if the serve command is ran inside docker. It adds '--host 0.0.0.0 --disable-host-check' to the list of webpack-dev-server arguments.
-   * @option dev-server-host Hostname of the machine (or container) that is running this command as seen by the webserver php. It's only required when they're not the same. Example: webpack:serve is ran in the docker-compose service named `cli`, while the webserver uses the `php` service. In this case the command should be invoked as follows: `drush webpack:serve --docker --php-remote-host=cli`.
+   * @option dev-server-host Hostname of the machine (or container) that is running this command as seen by the webserver php. It's only required when they're not the same. Example: webpack:serve is ran in the docker-compose service named `cli`, while the webserver uses the `php` service. In this case the command should be invoked as follows: `drush webpack:serve --docker --dev-server-host=cli`.
+   * @option lagoon Run in a lagoon project. Equal to '--docker --dev-server-host=cli'.
    * @aliases wpsrv
    * @usage drush wepback:serve
    *   Serve the js files.
    */
   public function serve($options = [
     'port' => '1234',
-    'docker' => false,
+    'docker' => FALSE,
     'dev-server-host' => 'localhost',
+    'lagoon' => FALSE,
   ]) {
     $this->output()->writeln('Hey! Starting the dev server.');
     try {
+      if ($options['lagoon']) {
+        $options['docker'] = TRUE;
+        $options['dev-server-host'] = 'cli';
+      }
       $this->bundler->serve(
         $options['port'],
         $options['docker'],
