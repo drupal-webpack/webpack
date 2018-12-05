@@ -66,6 +66,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
    */
   public function getJsAssets(AttachedAssetsInterface $assets, $optimize) {
     $devUrl = $this->getDevServerUrl();
+    $devMapping = $this->state->get('webpack_serve_mapping', []);
     $bundleMapping = $this->webpackBundleInfo->getBundleMapping();
     $result = $this->assetResolver->getJsAssets($assets, $optimize);
 
@@ -107,23 +108,30 @@ class DecoratedAssetResolver implements AssetResolverInterface {
           }
           $path = $jsAssetInfo['data'];
           $fileId = $this->librariesInspector->getJsFileId($libraryId, $path);
+          $defaults = $result[$scopeKey][$path] + [
+            'type' => 'file',
+            'group' => JS_DEFAULT,
+            'weight' => 0,
+            'cache' => FALSE,
+            'preprocess' => FALSE,
+            'attributes' => [],
+            'version' => NULL,
+            'browsers' => [],
+            'scope' => $scope,
+            'minified' => TRUE,
+          ];
           if ($devUrl) {
-            // TODO: Get the files to include from the output of webpack:serve
-            //       after finding a way to tap into its output.
-            $bundleName = "$fileId.bundle.js";
-            $result[$scopeKey][$path] = [
-              'type' => 'file',
-              'group' => JS_DEFAULT,
-              'weight' => 0,
-              'cache' => FALSE,
-              'preprocess' => FALSE,
-              'attributes' => [],
-              'version' => NULL,
-              'browsers' => [],
-              'scope' => $scope,
-              'minified' => TRUE,
-              'data' => "$devUrl/$bundleName",
-            ];
+            $suffix = '';
+            foreach ($devMapping[$fileId] as $fileName) {
+              $result[$scopeKey]["$path$suffix"] = [
+                'cache' => FALSE,
+                'preprocess' => FALSE,
+                'minified' => TRUE,
+                'type' => 'file',
+                'data' => "$devUrl/$fileName",
+              ] + $defaults;
+              $suffix = empty($suffix) ? 1 : $suffix + 1;
+            }
           } else {
             if (!isset($bundleMapping[$fileId])) {
               // Did you forget to run `drush webpack:build`?
@@ -143,19 +151,16 @@ class DecoratedAssetResolver implements AssetResolverInterface {
                 );
                 continue;
               }
-              $result[$scopeKey][$path] = [
-                'type' => 'file',
-                'group' => JS_DEFAULT,
-                'weight' => 0,
-                'cache' => FALSE,
-                'preprocess' => FALSE,
-                'attributes' => [],
-                'version' => NULL,
-                'browsers' => [],
-                'scope' => $scope,
-                'minified' => TRUE,
-                'data' => "$bundleFilePath",
-              ];
+              $suffix = '';
+              foreach ($devMapping[$fileId] as $fileName) {
+                $result[$scopeKey]["$path$suffix"] = [
+                    'preprocess' => FALSE,
+                    'minified' => TRUE,
+                    'type' => 'file',
+                    'data' => $bundleFilePath,
+                  ] + $defaults;
+                $suffix = empty($suffix) ? 1 : $suffix + 1;
+              }
             }
           }
         }
