@@ -107,6 +107,9 @@ class DecoratedAssetResolver implements AssetResolverInterface {
             );
           }
           $path = $jsAssetInfo['data'];
+          if (!isset($result[$scopeKey][$path])) {
+            continue;
+          }
           $fileId = $this->librariesInspector->getJsFileId($libraryId, $path);
           $defaults = $result[$scopeKey][$path] + [
             'type' => 'file',
@@ -141,6 +144,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
               );
               continue;
             }
+            $suffix = '';
             foreach ($bundleMapping[$fileId] as $bundleFilePath) {
               if (!file_exists($bundleFilePath)) {
                 // File had been built but it was removed from the filesystem
@@ -151,16 +155,13 @@ class DecoratedAssetResolver implements AssetResolverInterface {
                 );
                 continue;
               }
-              $suffix = '';
-              foreach ($devMapping[$fileId] as $fileName) {
-                $result[$scopeKey]["$path$suffix"] = [
-                    'preprocess' => FALSE,
-                    'minified' => TRUE,
-                    'type' => 'file',
-                    'data' => $bundleFilePath,
-                  ] + $defaults;
-                $suffix = empty($suffix) ? 1 : $suffix + 1;
-              }
+              $result[$scopeKey]["$path$suffix"] = [
+                  'preprocess' => FALSE,
+                  'minified' => TRUE,
+                  'type' => 'file',
+                  'data' => $bundleFilePath,
+                ] + $defaults;
+              $suffix = empty($suffix) ? 1 : (int)$suffix + 1;
             }
           }
         }
