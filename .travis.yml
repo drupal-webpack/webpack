@@ -12,9 +12,9 @@ env:
   - SIMPLETEST_DB=mysql://root:@127.0.0.1/webpack
   - TRAVIS=true
   matrix:
-  - DRUPAL_CORE=8.3.x
-  - DRUPAL_CORE=8.4.x
   - DRUPAL_CORE=8.5.x
+  - DRUPAL_CORE=8.6.x
+  - DRUPAL_CORE=8.7.x
 
 matrix:
   # Don't wait for the allowed failures to build.
@@ -22,12 +22,12 @@ matrix:
   include:
   - php: '7.1'
     env:
-    - DRUPAL_CORE=8.4.x
+    - DRUPAL_CORE=8.5.x
   allow_failures:
   # Allow the code coverage report to fail.
   - php: '7.1'
     env:
-    - DRUPAL_CORE=8.4.x
+    - DRUPAL_CORE=8.5.x
 
 mysql:
   database: webpack
@@ -107,7 +107,7 @@ install:
 - cp $DRUPAL_BUILD_DIR/modules/contrib/webpack/phpunit.xml.dist $DRUPAL_BUILD_DIR/core/phpunit.xml
 
 script:
-- $DRUPAL_BUILD_DIR/vendor/bin/drush si -y minimal --sites-subdir default --db-url=sqlite://sites/default/files/.ht.sqlite
+- $DRUPAL_BUILD_DIR/vendor/bin/drush si -y minimal --sites-subdir default --db-url=$SIMPLETEST_DB
 - $DRUPAL_BUILD_DIR/vendor/bin/drush serve 2>&1 &
 - until netstat -an 2>/dev/null | grep '8888.*LISTEN'; sleep 1; curl -I http://127.0.0.1:8888 ; do true; done
 - $DRUPAL_BUILD_DIR/vendor/bin/drush sql-drop -y
