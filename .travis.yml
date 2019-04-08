@@ -76,7 +76,7 @@ install:
 - composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-$COMPOSER_ID drush/drush:^9
 
 # Upgrade phpunit to a newer version.
-- composer run-script drupal-phpunit-upgrade
+- composer run-script drupal-phpunit-upgrade || true
 
 # For some reason, only in travis, the dependencies are downloaded but the module itself is not.
 - rm -rf $DRUPAL_BUILD_DIR/modules/contrib/webpack

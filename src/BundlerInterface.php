@@ -57,6 +57,9 @@ interface BundlerInterface {
    * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
    * @throws \Drupal\webpack\WebpackConfigNotValidException
    * @throws \Drupal\webpack\WebpackConfigWriteException
+   * @throws \Drupal\webpack\WebpackLibraryIdNotValidException
+   * @throws \Drupal\webpack\WebpackNotAWebpackLibraryException
+   * @throws \Drupal\webpack\WebpackSingleLibraryInvalidNumberOfJsEntrypointsException
    */
   public function buildSingle($libraryId);
 

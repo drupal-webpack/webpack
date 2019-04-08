@@ -104,7 +104,7 @@ class Bundler implements BundlerInterface {
   public function buildSingle($libraryId) {
     $library = $this->librariesInspector->getLibraryById($libraryId);
 
-    $outputPath = $this->webpackConfigBuilder->getSingleLibOutputFilePath($library, TRUE);
+    $outputPath = $this->webpackConfigBuilder->getSingleLibOutputFilePath($library);
     $outputPathParts = explode('/', $outputPath);
     $outputFileName = array_pop($outputPathParts);
     $outputDir = implode('/', $outputPathParts);
