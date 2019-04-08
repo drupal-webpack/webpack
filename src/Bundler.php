@@ -3,10 +3,7 @@
 namespace Drupal\webpack;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Extension\Extension;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\State\StateInterface;
-use Drupal\npm\Plugin\NpmExecutableNotFoundException;
 use Drupal\npm\Plugin\NpmExecutablePluginManager;
 
 class Bundler implements BundlerInterface {
