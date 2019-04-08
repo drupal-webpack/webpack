@@ -1,4 +1,4 @@
 name: 'Webpack independent build test'
 description: 'Test module for the dependency-free building'
-type: theme
+type: module
 core: 8.x

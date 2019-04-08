@@ -3,14 +3,13 @@
 namespace Drupal\Tests\webpack\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\npm\Exception\NpmCommandFailedException;
 
 abstract class WebpackTestBase extends KernelTestBase {
 
   protected static $modules = ['npm', 'system', 'webpack', 'webpack_test_libs'];
 
   /**
-   * @var \Drupal\npm\NpmExecutableInterface
+   * @var \Drupal\npm\Plugin\NpmExecutableInterface
    */
   protected $npmExecutable;
 
@@ -36,6 +35,9 @@ abstract class WebpackTestBase extends KernelTestBase {
 
   /**
    * {@inheritdoc}
+   * @throws \Drupal\npm\Exception\NpmCommandFailedException
+   * @throws \Drupal\npm\Plugin\NpmExecutableNotFoundException
+   * @throws \Exception
    */
   protected function setUp() {
     parent::setUp();
