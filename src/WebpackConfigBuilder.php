@@ -123,10 +123,18 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
     $content = $prefix . "module.exports = $configString";
 
-    $path = file_unmanaged_save_data(
-      $content,
-      'temporary://webpack.config.js',
-      FILE_EXISTS_REPLACE);
+    if (method_exists($this->fileSystem, 'saveData')) {
+      $path = $this->fileSystem->saveData(
+        $content,
+        'temporary://webpack.config.js',
+        FILE_EXISTS_REPLACE);
+    } else {
+      // TODO: Remove when drupal 8.6 is EOL.
+      $path = file_unmanaged_save_data(
+        $content,
+        'temporary://webpack.config.js',
+        FILE_EXISTS_REPLACE);
+    }
     if ($path === FALSE) {
       throw new WebpackConfigWriteException();
     }
@@ -168,7 +176,14 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
    *   True if the directory is writable.
    */
   protected function prepareDirectory($outputDir) {
-    if (!file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY)) {
+    if (method_exists($this->fileSystem, 'prepare_directory')) {
+      $dirPrepared = $this->fileSystem->prepareDirectory($outputDir, FILE_CREATE_DIRECTORY);
+    } else {
+      // TODO: Remove when Drupal 8.6 is EOL.
+      $dirPrepared = file_prepare_directory($outputDir, FILE_CREATE_DIRECTORY);
+    }
+
+    if (!$dirPrepared) {
       $this->loggerChannel->error(
         'Webpack output directory @dir is not writable.',
         ['@dir' => $outputDir]
