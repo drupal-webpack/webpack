@@ -56,8 +56,6 @@ abstract class WebpackTestBase extends KernelTestBase {
     \module_load_include('install', 'webpack_test_libs');
     \webpack_test_libs_install();
 
-    \Drupal::service('theme_handler')->install(['webpack_independent_build_test']);
-
     $this->npmExecutable->initPackageJson();
 
     // Add webpack dependencies.
