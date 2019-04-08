@@ -168,7 +168,7 @@ class LibrariesInspector implements LibrariesInspectorInterface {
 
 class WebpackLibraryIdNotValidException extends \Exception {
 
-  public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
+  public function __construct($message = "", $code = 0, \Throwable $previous = NULL) {
     if (empty($message)) {
       $message = 'The provided library id is not valid or the library doesn\'t exist. Expected format: [module_name]/[library_name].';
     }

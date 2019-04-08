@@ -4,7 +4,6 @@ sudo: false
 php:
 - '7.1'
 - '7'
-- '5.6'
 
 env:
   global:
@@ -12,22 +11,12 @@ env:
   - SIMPLETEST_DB=mysql://root:@127.0.0.1/webpack
   - TRAVIS=true
   matrix:
-  - DRUPAL_CORE=8.5.x
   - DRUPAL_CORE=8.6.x
   - DRUPAL_CORE=8.7.x
 
 matrix:
   # Don't wait for the allowed failures to build.
   fast_finish: true
-  include:
-  - php: '7.1'
-    env:
-    - DRUPAL_CORE=8.5.x
-  allow_failures:
-  # Allow the code coverage report to fail.
-  - php: '7.1'
-    env:
-    - DRUPAL_CORE=8.5.x
 
 mysql:
   database: webpack
@@ -85,6 +74,9 @@ install:
 # composer doesn't do recursive resolution for packages fetched from custom repositories.
 # @see https://getcomposer.org/doc/faqs/why-can%27t-composer-load-repositories-recursively.md
 - composer --working-dir=$DRUPAL_BUILD_DIR require drupal/webpack:dev-$COMPOSER_ID drush/drush:^9
+
+# Upgrade phpunit to a newer version.
+- composer run-script drupal-phpunit-upgrade
 
 # For some reason, only in travis, the dependencies are downloaded but the module itself is not.
 - rm -rf $DRUPAL_BUILD_DIR/modules/contrib/webpack
