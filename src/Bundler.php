@@ -186,3 +186,15 @@ class Bundler implements BundlerInterface {
   }
 
 }
+
+// DC Seattle 2019 list
+
+// DONE: Fix travis tests.
+
+// DONE: Add testing for 8.7 and remove deprecated method calls.
+
+// TODO: Write a patch to devel with loading dependencies.
+
+// TODO: Make the Vue module work.
+
+// TODO: Add the optimizations code.

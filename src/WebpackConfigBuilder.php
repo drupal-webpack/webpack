@@ -123,18 +123,7 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
     $content = $prefix . "module.exports = $configString";
 
-    if (method_exists($this->fileSystem, 'saveData')) {
-      $path = $this->fileSystem->saveData(
-        $content,
-        'temporary://webpack.config.js',
-        FILE_EXISTS_REPLACE);
-    } else {
-      // TODO: Remove when drupal 8.6 is EOL.
-      $path = file_unmanaged_save_data(
-        $content,
-        'temporary://webpack.config.js',
-        FILE_EXISTS_REPLACE);
-    }
+    $path = $this->saveData($content, 'temporary://webpack.config.js');
     if ($path === FALSE) {
       throw new WebpackConfigWriteException();
     }
@@ -176,7 +165,7 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
    *   True if the directory is writable.
    */
   protected function prepareDirectory($outputDir) {
-    if (method_exists($this->fileSystem, 'prepare_directory')) {
+    if (method_exists($this->fileSystem, 'prepareDirectory')) {
       $dirPrepared = $this->fileSystem->prepareDirectory($outputDir, FILE_CREATE_DIRECTORY);
     } else {
       // TODO: Remove when Drupal 8.6 is EOL.
@@ -253,6 +242,31 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
    */
   protected function hash($value) {
     return hash('sha256', $value);
+  }
+
+  /**
+   * Saved the given content in a temp location
+   *
+   * @param string $content
+   *   Contents of the file to save.
+   * @param $destination
+   *   The target uri.
+   *
+   * @return bool|string
+   */
+  protected function saveData($content, $destination) {
+    if (method_exists($this->fileSystem, 'saveData')) {
+      return $this->fileSystem->saveData(
+        $content,
+        $destination,
+        FILE_EXISTS_REPLACE);
+    } else {
+      // TODO: Remove when drupal 8.6 is EOL.
+      return file_unmanaged_save_data(
+        $content,
+        $destination,
+        FILE_EXISTS_REPLACE);
+    }
   }
 
 }
