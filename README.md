@@ -6,7 +6,7 @@ Integrates Drupal with [webpack](https://webpack.js.org/).
 
 ## What it does?
 
-The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers (see [Webpack Babel](https://drupal.org/project/webpack_babel)).
+The module allows developers to have their Drupal libraries bundled by webpack. It makes it easy to import npm packages and use modern javascript that will work across a variety of browsers (with [Webpack Babel](https://drupal.org/project/webpack_babel)).
 
 ## Dependencies
 
@@ -16,7 +16,7 @@ The module allows developers to have their Drupal libraries bundled by webpack. 
 
 ## Setup
 
-Your project needs to have a `package.json` file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the webroot and the project-wide `composer.json`. Placing the file inside the webroot would work too. If you don't have such a file `yarn init -yp` will generate an empty one.
+Your project needs to have a `package.json` file somewhere up the directory tree. In drupal-composer projects it is a common practice to place one next to the project-wide `composer.json`. If you don't have such a file `yarn init -yp` will generate an empty one.
 
 Once you've got `package.json`, add the module as a local dependency.
 
@@ -24,21 +24,23 @@ Once you've got `package.json`, add the module as a local dependency.
 
 ## Usage
 
-Add `webpack: true` to your library definition in `module_name.libraries.yml`.
+Add `webpack: true` to your library definition in `module_name.libraries.yml` (example).
 
 ### Local development
 
-For local development, start the dev server with `drush webpack:serve --port 1234` and reload the page. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
+For local development, start the dev server with `drush webpack:serve`. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
 
-When running inside a container add the `--docker`. This alone will work if the webserver is ran in the same container as drush. Otherwise, drupal will need some additional info in order to detect the server, i.e. `--dev-server-host=cli` where cli the hostname (i.e. the service name from docker-compose) of the container that runs drush.
+When running inside a container add the `--docker`. This alone will work if the webserver is ran in the same container as drush. Otherwise, drupal will need some additional info in order to detect the server, i.e. `--dev-server-host=cli` where cli the hostname (or the service name from docker-compose) of the container that runs drush.
 
 ### Building for prod
 
-For local development, start the dev server with `drush webpack:serve --port 1234` and reload the page. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
+On the server, add `drush webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` (_sites/default/files_ by default) and included automatically.
 
-On the server, add `drush webpack:build` to your after-deploy steps. The bundles will be written to `public://webpack` and included automatically.
+The output directory can be changed at `/admin/config/webpack/settings`, to put the files under source control for instance. If you set it to a path that is outside of the public files folder make sure to export your site's config after building ([details](https://github.com/drupal-webpack/webpack/blob/e498e8b2ce8b986fe91b280af7b3797bdfa6f41b/src/Bundler.php#L133)).
 
-The output directory can be changed at `/admin/config/webpack/settings` e.g. to put the files under source control. If you set it to a path that is outside of the public files folder make sure to export your site's config after building ([details](https://github.com/drupal-webpack/webpack/blob/e498e8b2ce8b986fe91b280af7b3797bdfa6f41b/src/Bundler.php#L133)).
+### Building for contrib
+
+If you're building a contrib module and you don't want to force the end sites to have to set up webpack you can bundle a single library along with all its npm dependencies. The library will work on a plain drupal installation. However, when the end site installs webpack at some point it will detect the lib and do the bundling on the project level, enabling the long-term vendor caching and bundle splitting.
 
 ## Know issues
 
