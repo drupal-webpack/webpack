@@ -24,7 +24,7 @@ Once you've got `package.json`, add the module as a local dependency.
 
 ## Usage
 
-Add `webpack: true` to your library definition in `module_name.libraries.yml` (example).
+Add `webpack: true` to your library definition in `module_name.libraries.yml` ([example](https://git.drupalcode.org/project/webpack/blob/8.x-1.x/tests/modules/webpack_test_libs/webpack_test_libs.libraries.yml#L3)).
 
 ### Local development
 
@@ -42,7 +42,9 @@ The output directory can be changed at `/admin/config/webpack/settings`, to put 
 
 If you're building a contrib module and you don't want to force the end sites to have to set up webpack you can bundle a single library along with all its npm dependencies. The library will work on a plain drupal installation. However, when the end site installs webpack at some point it will detect the lib and do the bundling on the project level, enabling the long-term vendor caching and bundle splitting.
 
-## Know issues
+To build a single library set its definition [like this](https://git.drupalcode.org/project/webpack/blob/8.x-1.x/tests/modules/webpack_independent_build_test/webpack_independent_build_test.libraries.yml) and run <code>drush webpack:build-single module_name/library_name</code>.
+
+## Known issues
 
 Some builds can break because of javascript aggregation. It can be disabled at _/admin/config/development/performance_.
 
