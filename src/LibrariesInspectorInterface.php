@@ -67,4 +67,11 @@ interface LibrariesInspectorInterface {
    */
   public function getJsFileId($libraryId, $filepath);
 
+  /**
+   * Returns all the webpack libraries grouped by module/theme name.
+   *
+   * @return array
+   */
+  public function getAllWebpackLibraries();
+
 }

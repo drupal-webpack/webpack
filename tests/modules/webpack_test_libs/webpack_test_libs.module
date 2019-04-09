@@ -4,10 +4,14 @@
  * Implements hook_page_attachments.
  */
 function webpack_test_libs_page_attachments(array &$attachments) {
+  /** @var \Drupal\webpack\LibrariesInspectorInterface $librariesInspector */
+  $librariesInspector = \Drupal::service('webpack.libraries_inspector');
   // Attach the test libraries unconditionally .
-  $attachments['#attached']['library'][] = 'webpack_test_libs/test';
-  $attachments['#attached']['library'][] = 'webpack_test_libs/test_header';
-  $attachments['#attached']['library'][] = 'webpack_test_libs/my_library';
+  foreach ($librariesInspector->getAllWebpackLibraries() as $extension => $libraries) {
+    foreach ($libraries as $libraryName => $library) {
+      $attachments['#attached']['library'][] = "$extension/$libraryName";
+    }
+  }
 }
 
 /**

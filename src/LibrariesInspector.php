@@ -43,12 +43,8 @@ class LibrariesInspector implements LibrariesInspectorInterface {
    */
   public function getAllEntryPoints() {
     $entryPoints = [];
-    foreach ($this->getAllLibraries() as $extension => $libraries) {
+    foreach ($this->getAllWebpackLibraries() as $extension => $libraries) {
       foreach ($libraries as $libraryName => $library) {
-        if (!$this->isWebpackLib($library)) {
-          continue;
-        }
-
         $entryPoints += $this->getEntryPoints($library, "$extension/$libraryName");
       }
     }
@@ -117,6 +113,21 @@ class LibrariesInspector implements LibrariesInspectorInterface {
     $filename = basename($filepath, '.js');
     list($extension, $libraryName) = explode('/', $libraryId);
     return "$extension-$libraryName-$filename";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAllWebpackLibraries() {
+    $libraries = [];
+    foreach ($this->getAllLibraries() as $extension => $libraries) {
+      foreach ($libraries as $libraryName => $library) {
+        if ($this->isWebpackLib($library)) {
+          $libraries[$extension][$libraryName] = $library;
+        }
+      }
+    }
+    return $libraries;
   }
 
   /**
