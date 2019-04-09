@@ -190,7 +190,15 @@ class Bundler implements BundlerInterface {
 
 // DONE: Add testing for 8.7 and remove deprecated method calls.
 
-// TODO: Write a patch to devel with loading dependencies.
+// DONE: Write a patch to devel with loading dependencies.
+
+// DONE: Update webpack's installation instructions.
+
+// TODO: Update webpack babel's installation instructions.
+
+// TODO: Update webpack react's installation instructions.
+
+// TODO: Update webpack vue's installation instructions.
 
 // TODO: Make the Vue module work.
 
