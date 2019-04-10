@@ -119,7 +119,7 @@ class LibrariesInspector implements LibrariesInspectorInterface {
    * {@inheritdoc}
    */
   public function getAllWebpackLibraries() {
-    $libraries = [];
+    $result = [];
     foreach ($this->getAllLibraries() as $extension => $libraries) {
       foreach ($libraries as $libraryName => $library) {
         if ($this->isWebpackLib($library)) {
@@ -127,7 +127,7 @@ class LibrariesInspector implements LibrariesInspectorInterface {
         }
       }
     }
-    return $libraries;
+    return $result;
   }
 
   /**
