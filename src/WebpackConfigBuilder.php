@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\webpack\Exception\WebpackException;
 use Drupal\webpack\Plugin\ConfigProcessorPluginManager;
 
 class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
@@ -271,7 +272,7 @@ class WebpackConfigBuilder implements WebpackConfigBuilderInterface {
 
 }
 
-class WebpackConfigNotValidException extends \Exception {
+class WebpackConfigNotValidException extends WebpackException {
 
   public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
     if (empty($message)) {
@@ -282,7 +283,7 @@ class WebpackConfigNotValidException extends \Exception {
 
 }
 
-class WebpackConfigWriteException extends \Exception {
+class WebpackConfigWriteException extends WebpackException {
 
   public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
     if (empty($message)) {
@@ -293,7 +294,7 @@ class WebpackConfigWriteException extends \Exception {
 
 }
 
-class WebpackNotAWebpackLibraryException extends \Exception {
+class WebpackNotAWebpackLibraryException extends WebpackException {
 
   public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
     if (empty($message)) {
@@ -304,7 +305,7 @@ class WebpackNotAWebpackLibraryException extends \Exception {
 
 }
 
-class WebpackSingleLibraryInvalidNumberOfJsEntrypointsException extends \Exception {
+class WebpackSingleLibraryInvalidNumberOfJsEntrypointsException extends WebpackException {
 
   public function __construct(string $message = "", int $code = 0, \Throwable $previous = NULL) {
     if (empty($message)) {

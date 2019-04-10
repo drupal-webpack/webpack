@@ -7,6 +7,7 @@ use Drupal\Core\Extension\Exception\UnknownExtensionException;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\webpack\Exception\WebpackException;
 
 class LibrariesInspector implements LibrariesInspectorInterface {
 
@@ -123,7 +124,7 @@ class LibrariesInspector implements LibrariesInspectorInterface {
     foreach ($this->getAllLibraries() as $extension => $libraries) {
       foreach ($libraries as $libraryName => $library) {
         if ($this->isWebpackLib($library)) {
-          $libraries[$extension][$libraryName] = $library;
+          $result[$extension][$libraryName] = $library;
         }
       }
     }
@@ -177,7 +178,7 @@ class LibrariesInspector implements LibrariesInspectorInterface {
 
 }
 
-class WebpackLibraryIdNotValidException extends \Exception {
+class WebpackLibraryIdNotValidException extends WebpackException {
 
   public function __construct($message = "", $code = 0, \Throwable $previous = NULL) {
     if (empty($message)) {

@@ -83,6 +83,6 @@ abstract class ConfigProcessorBase extends PluginBase implements ConfigProcessor
 
 }
 
-class WebpackConfigNodeModulesNotFoundException extends \Exception {
+class WebpackConfigNodeModulesNotFoundException extends WebpackException {
 
 }
