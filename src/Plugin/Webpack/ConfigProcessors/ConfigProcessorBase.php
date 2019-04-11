@@ -6,6 +6,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\webpack\BundlerInterface;
+use Drupal\webpack\Exception\WebpackException;
 use Drupal\webpack\Plugin\ConfigProcessorPluginInterface;
 use Drupal\webpack\WebpackConfigBuilderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
