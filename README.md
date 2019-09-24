@@ -28,7 +28,7 @@ Add `webpack: true` to your library definition in `module_name.libraries.yml` ([
 
 ### Local development
 
-For local development, start the dev server with `drush webpack:serve`. The module will detect it and inject the development version (with live reload). It is important to either run it outside of docker containers or set up port forwarding.
+For local development, start the dev server with `drush webpack:serve`. The module will detect it and inject the development version (with live reload). Make sure you don't have Bigpipe or JS aggregation enabled locally. It is important to either run it outside of docker containers or set up port forwarding.
 
 When running inside a container add the `--docker`. This alone will work if the webserver is ran in the same container as drush. Otherwise, drupal will need some additional info in order to detect the server, i.e. `--dev-server-host=cli` where cli the hostname (or the service name from docker-compose) of the container that runs drush.
 
