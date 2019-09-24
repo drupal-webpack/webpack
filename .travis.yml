@@ -18,10 +18,8 @@ matrix:
   # Don't wait for the allowed failures to build.
   fast_finish: true
 
-mysql:
-  database: webpack
-  username: root
-  encoding: utf8
+services:
+  - mysql
 
 # Cache composer downloads.
 cache:
