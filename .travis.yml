@@ -11,8 +11,8 @@ env:
   - SIMPLETEST_DB=mysql://root:@127.0.0.1/webpack
   - TRAVIS=true
   matrix:
-  - DRUPAL_CORE=8.6.x
   - DRUPAL_CORE=8.7.x
+  - DRUPAL_CORE=8.8.x
 
 matrix:
   # Don't wait for the allowed failures to build.
