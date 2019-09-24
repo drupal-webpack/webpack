@@ -105,13 +105,30 @@ class DecoratedAssetResolver implements AssetResolverInterface {
               'Only file assets are supported. Got @type.',
               ['@type' => $jsAssetInfo['type']]
             );
-          }
-          $path = $jsAssetInfo['data'];
-          if (!isset($result[$scopeKey][$path])) {
             continue;
           }
+          $path = $jsAssetInfo['data'];
+          // The array key can be either a path or a number (if js aggregation
+          // is enabled).
+          $key = $path;
+          if (!isset($result[$scopeKey][$path])) {
+            // In the js preprocessing mode the result keys are not the asset
+            // paths anymore.
+            $aggregationKey = NULL;
+            foreach ($result[$scopeKey] as $key => $item) {
+              if (isset($item['data']) && $item['data'] == $path) {
+                $aggregationKey = $key;
+              }
+            }
+
+            if ($aggregationKey) {
+              $key = $aggregationKey;
+            } else {
+              continue;
+            }
+          }
           $fileId = $this->librariesInspector->getJsFileId($libraryId, $path);
-          $defaults = $result[$scopeKey][$path] + [
+          $defaults = $result[$scopeKey][$key] + [
             'type' => 'file',
             'group' => JS_DEFAULT,
             'weight' => 0,
@@ -126,7 +143,7 @@ class DecoratedAssetResolver implements AssetResolverInterface {
           if ($devUrl) {
             $suffix = '';
             foreach ($devMapping[$fileId] as $fileName) {
-              $result[$scopeKey]["$path$suffix"] = [
+              $result[$scopeKey]["$key$suffix"] = [
                 'cache' => FALSE,
                 'preprocess' => FALSE,
                 'minified' => TRUE,
